@@ -1,0 +1,52 @@
+## =====================
+## .NET / C#
+## =====================
+
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## =====================
+## Build & Publish
+## =====================
+
+publish/
+out/
+
+## =====================
+## Logs
+## =====================
+
+*.log
+
+## =====================
+## Test Results
+## =====================
+
+TestResults/
+
+## =====================
+## IDEs
+## =====================
+
+.vs/
+.vscode/
+.idea/
+
+## =====================
+## OS
+## =====================
+
+.DS_Store
+Thumbs.db
+
+## =====================
+## Secrets
+## =====================
+
+appsettings.Development.json
+appsettings.Local.json
+secrets.json

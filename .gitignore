@@ -1,0 +1,26 @@
+## Backend
+**/bin/
+**/obj/
+**/publish/
+**/TestResults/
+
+## Frontend
+**/node_modules/
+**/dist/
+**/build/
+
+## Env & Secrets
+**/.env*
+**/appsettings.*.json
+
+## IDEs
+.vs/
+.vscode/
+.idea/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log
