@@ -1,0 +1,18 @@
+namespace MarinhoDiscos.Domain.Entities;
+
+public class Genre
+{
+    public Guid Id { get; private set; }
+    public string Name { get; private set; }
+
+    protected Genre() { }
+
+    public Genre(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new DomainException("Genre name is required");
+
+        Id = Guid.NewGuid();
+        Name = name;
+    }
+}
