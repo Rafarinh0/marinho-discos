@@ -1,6 +1,7 @@
 ﻿namespace MarinhoDiscos.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using MarinhoDiscos.Domain.Exceptions;
 
 public class Album
 {

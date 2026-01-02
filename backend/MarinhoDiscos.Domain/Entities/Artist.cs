@@ -1,4 +1,6 @@
 namespace MarinhoDiscos.Domain.Entities;
+using NodaTime;
+using MarinhoDiscos.Domain.Exceptions;
 
 public class Artist
 {

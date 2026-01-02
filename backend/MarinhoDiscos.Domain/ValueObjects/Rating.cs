@@ -1,4 +1,5 @@
 ﻿namespace MarinhoDiscos.Domain.ValueObjects;
+using MarinhoDiscos.Domain.Exceptions;
 
 public sealed class Rating
 {

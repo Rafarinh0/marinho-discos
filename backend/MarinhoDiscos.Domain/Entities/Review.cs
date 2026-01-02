@@ -1,4 +1,5 @@
 ﻿namespace MarinhoDiscos.Domain.Entities;
+using MarinhoDiscos.Domain.ValueObjects;
 
 public class Review
 {
