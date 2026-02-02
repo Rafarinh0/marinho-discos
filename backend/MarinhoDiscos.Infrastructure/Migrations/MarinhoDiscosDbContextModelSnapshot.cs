@@ -22,6 +22,36 @@ namespace MarinhoDiscos.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("AlbumGenres", b =>
+                {
+                    b.Property<Guid>("AlbumId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GenreId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AlbumId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("AlbumGenres");
+                });
+
+            modelBuilder.Entity("ArtistGenre", b =>
+                {
+                    b.Property<Guid>("ArtistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GenresId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ArtistId", "GenresId");
+
+                    b.HasIndex("GenresId");
+
+                    b.ToTable("ArtistGenres", (string)null);
+                });
+
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Album", b =>
                 {
                     b.Property<Guid>("Id")
@@ -58,14 +88,15 @@ namespace MarinhoDiscos.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateOnly?>("debutYear")
                         .HasColumnType("date");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Artists");
+                    b.ToTable("Artists", (string)null);
                 });
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Genre", b =>
@@ -74,18 +105,36 @@ namespace MarinhoDiscos.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ArtistId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArtistId");
+                    b.ToTable("Genres");
+                });
 
-                    b.ToTable("Genre");
+            modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Review", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlbumId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Track", b =>
@@ -102,7 +151,8 @@ namespace MarinhoDiscos.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("TrackNumber")
                         .HasColumnType("integer");
@@ -111,7 +161,37 @@ namespace MarinhoDiscos.Infrastructure.Migrations
 
                     b.HasIndex("AlbumId");
 
-                    b.ToTable("Track");
+                    b.ToTable("Tracks");
+                });
+
+            modelBuilder.Entity("AlbumGenres", b =>
+                {
+                    b.HasOne("MarinhoDiscos.Domain.Entities.Album", null)
+                        .WithMany()
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MarinhoDiscos.Domain.Entities.Genre", null)
+                        .WithMany()
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ArtistGenre", b =>
+                {
+                    b.HasOne("MarinhoDiscos.Domain.Entities.Artist", null)
+                        .WithMany()
+                        .HasForeignKey("ArtistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MarinhoDiscos.Domain.Entities.Genre", null)
+                        .WithMany()
+                        .HasForeignKey("GenresId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Album", b =>
@@ -125,11 +205,35 @@ namespace MarinhoDiscos.Infrastructure.Migrations
                     b.Navigation("Artist");
                 });
 
-            modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Genre", b =>
+            modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Review", b =>
                 {
-                    b.HasOne("MarinhoDiscos.Domain.Entities.Artist", null)
-                        .WithMany("Genres")
-                        .HasForeignKey("ArtistId");
+                    b.HasOne("MarinhoDiscos.Domain.Entities.Album", "Album")
+                        .WithMany("Reviews")
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("MarinhoDiscos.Domain.ValueObjects.Rating", "Rating", b1 =>
+                        {
+                            b1.Property<Guid>("ReviewId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("Value")
+                                .HasColumnType("integer")
+                                .HasColumnName("Rating");
+
+                            b1.HasKey("ReviewId");
+
+                            b1.ToTable("Reviews");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReviewId");
+                        });
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Rating")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Track", b =>
@@ -145,14 +249,14 @@ namespace MarinhoDiscos.Infrastructure.Migrations
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Album", b =>
                 {
+                    b.Navigation("Reviews");
+
                     b.Navigation("Tracks");
                 });
 
             modelBuilder.Entity("MarinhoDiscos.Domain.Entities.Artist", b =>
                 {
                     b.Navigation("Albums");
-
-                    b.Navigation("Genres");
                 });
 #pragma warning restore 612, 618
         }

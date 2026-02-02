@@ -14,8 +14,6 @@ public class MarinhoDiscosDbContext : DbContext
 	public DbSet<Track> Tracks => Set<Track>();
 	public DbSet<Genre> Genres => Set<Genre>();
 	public DbSet<Review> Reviews => Set<Review>();
-	public DbSet<Rating> Ratings => Set<Rating>();
-
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
         base.OnModelCreating(modelBuilder);
