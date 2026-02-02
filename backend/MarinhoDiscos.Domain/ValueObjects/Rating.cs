@@ -4,6 +4,8 @@ using MarinhoDiscos.Domain.Exceptions;
 public sealed class Rating
 {
     public int Value { get; }
+    
+    protected Rating() { }
 
     public Rating(int value)
     {

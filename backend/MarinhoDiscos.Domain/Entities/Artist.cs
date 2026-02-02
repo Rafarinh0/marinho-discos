@@ -6,7 +6,7 @@ public class Artist
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; }
-    public LocalDate debutYear { get; private set; }
+    public DateOnly? debutYear { get; private set; }
     public string Country { get; private set; }
 
     private readonly List<Genre> _genres = new();

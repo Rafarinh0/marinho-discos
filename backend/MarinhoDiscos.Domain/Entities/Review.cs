@@ -5,6 +5,7 @@ public class Review
 {
     public Guid Id { get; private set; }
     public Guid AlbumId { get; private set; }
+    public Album Album { get; set; }
     public Rating Rating { get; private set; }
     public string? Comment { get; private set; }
     public DateTime CreatedAt { get; private set; }

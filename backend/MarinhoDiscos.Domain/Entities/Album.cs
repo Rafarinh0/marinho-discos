@@ -17,6 +17,9 @@ public class Album
 
     private readonly List<Track> _tracks = new();
     public IReadOnlyCollection<Track> Tracks => _tracks.AsReadOnly();
+    
+    private readonly List<Review> _reviews = new();
+    public IReadOnlyCollection<Review> Reviews => _reviews.AsReadOnly();
 
     protected Album() { }
 
@@ -25,7 +28,8 @@ public class Album
         DateTime releaseDate,
         Guid artistId,
         IEnumerable<Genre> genres,
-        IEnumerable<Track> tracks)
+        IEnumerable<Track> tracks,
+        IEnumerable<Review> reviews)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new DomainException("Album title is required");
@@ -39,5 +43,6 @@ public class Album
         ArtistId = artistId;
         _genres.AddRange(genres);
         _tracks.AddRange(tracks);
+        _reviews.AddRange(reviews);
     }
 }
