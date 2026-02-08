@@ -11,13 +11,12 @@ public class Genre
 
     protected Genre() { }
 
-    public Genre(string name, IEnumerable<Album> albums)
+    public Genre(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new DomainException("Genre name is required");
 
         Id = Guid.NewGuid();
         Name = name;
-        _albums.AddRange(albums);
     }
 }

@@ -9,9 +9,6 @@ public class Artist
     public DateOnly? debutYear { get; private set; }
     public string Country { get; private set; }
 
-    private readonly List<Genre> _genres = new();
-    public IReadOnlyCollection<Genre> Genres => _genres.AsReadOnly();
-
     private readonly List<Album> _albums = new();
     public IReadOnlyCollection<Album> Albums => _albums.AsReadOnly();
 

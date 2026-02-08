@@ -19,13 +19,5 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
             .WithOne(a => a.Artist)
             .HasForeignKey(a => a.ArtistId)
             .OnDelete(DeleteBehavior.Cascade);
-        
-        builder
-            .HasMany(a => a.Genres)
-            .WithMany()
-            .UsingEntity(j =>
-            {
-                j.ToTable("ArtistGenres");
-            });
     }
 }
