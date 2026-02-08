@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
+using Microsoft.EntityFrameworkCore;
 using MarinhoDiscos.Infrastructure.Persistence;
 using MarinhoDiscos.Infrastructure.Repositories;
 using MarinhoDiscos.Domain.Repositories;
-using MarinhoDiscos.Application.UseCases;
 
 try
 {
@@ -15,8 +15,10 @@ try
         opt.UseNpgsql(connectionString));
 
     builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
+    builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-    builder.Services.AddScoped<CreateAlbumUseCase>();
+    
+    builder.Services.AddScoped<CreateArtistUseCase>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
