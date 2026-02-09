@@ -6,4 +6,6 @@ public interface IArtistRepository
     Task<Artist?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task AddAsync(Artist artist, CancellationToken ct = default);
     Task<bool> ExistsByNameAsync(string name, CancellationToken ct = default);
+    Task<List<Artist>> GetAllAsync(CancellationToken ct = default);
+    Task<bool> ExistsByIdAsync(Guid id, CancellationToken ct = default);
 }

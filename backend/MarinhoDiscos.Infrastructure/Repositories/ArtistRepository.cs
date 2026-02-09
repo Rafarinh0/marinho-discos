@@ -32,4 +32,14 @@ public class ArtistRepository : IArtistRepository
         return await _context.Artists
             .AnyAsync(a => a.Name.ToLower() == name.ToLower(), ct);
     }
+
+    public async Task<List<Artist>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.Artists.AsNoTracking().OrderBy(a => a.Name).ToListAsync(ct);
+    }
+    
+    public async Task<bool> ExistsByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.Artists.AnyAsync(a => a.Id == id, ct);
+    }
 }

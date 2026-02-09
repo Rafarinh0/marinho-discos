@@ -19,6 +19,7 @@ try
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     
     builder.Services.AddScoped<CreateArtistUseCase>();
+    builder.Services.AddScoped<GetArtistsUseCase>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

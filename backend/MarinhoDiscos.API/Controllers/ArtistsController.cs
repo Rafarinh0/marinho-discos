@@ -8,17 +8,28 @@ namespace MarinhoDiscos.API.Controllers;
 [Route("api/artists")]
 public class ArtistsController : ControllerBase
 {
-    private readonly CreateArtistUseCase _useCase;
+    private readonly CreateArtistUseCase _createArtistUseCase;
+    private readonly GetArtistsUseCase _getArtistsUseCase;
     
-    public ArtistsController(CreateArtistUseCase useCase)
+    public ArtistsController(
+        CreateArtistUseCase createArtistUseCase,  
+        GetArtistsUseCase getArtistsUseCase)
     {
-        _useCase = useCase;
+        _createArtistUseCase = createArtistUseCase;
+        _getArtistsUseCase = getArtistsUseCase;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CreateArtistRequest request, CancellationToken ct)
     {
-        var id = await _useCase.CreateArtist(request, ct);
+        var id = await _createArtistUseCase.CreateArtist(request, ct);
         return Created($"/api/artists/{id}", new { id });
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> GetAll(CancellationToken ct)
+    {
+        var artists = await _getArtistsUseCase.GetAllArtists(ct);
+        return Ok(artists);
     }
 }
