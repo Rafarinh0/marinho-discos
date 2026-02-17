@@ -21,8 +21,8 @@ public class AlbumRepository : IAlbumRepository
         return await _context.Set<Album>().FindAsync(id);
     }
 
-    public async Task AddAsync(Album album)
+    public async Task AddAsync(Album album, CancellationToken ct = default)
     {
-        await _context.Set<Album>().AddAsync(album);
+        await _context.Set<Album>().AddAsync(album, ct);
     }
 }

@@ -13,9 +13,11 @@ try
 
     builder.Services.AddDbContext<MarinhoDiscosDbContext>(opt =>
         opt.UseNpgsql(connectionString));
+    
 
     builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
     builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
+    builder.Services.AddScoped<IGenreRepository, GenreRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     
     builder.Services.AddScoped<CreateArtistUseCase>();

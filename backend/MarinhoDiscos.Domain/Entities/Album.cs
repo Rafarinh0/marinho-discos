@@ -20,16 +20,12 @@ public class Album
     
     private readonly List<Review> _reviews = new();
     public IReadOnlyCollection<Review> Reviews => _reviews.AsReadOnly();
+    
+    public int DurationSeconds => _tracks.Sum(t => t.DurationSeconds);
 
     protected Album() { }
 
-    public Album(
-        string title,
-        DateTime releaseDate,
-        Guid artistId,
-        IEnumerable<Genre> genres,
-        IEnumerable<Track> tracks,
-        IEnumerable<Review> reviews)
+    public Album(string title, DateTime releaseDate, Guid artistId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new DomainException("Album title is required");
@@ -41,8 +37,15 @@ public class Album
         Title = title;
         ReleaseDate = releaseDate;
         ArtistId = artistId;
-        _genres.AddRange(genres);
-        _tracks.AddRange(tracks);
-        _reviews.AddRange(reviews);
+    }
+
+    public void AddGenre(Genre genre)
+    {
+        _genres.Add(genre);
+    }
+
+    public void AddTrack(int number, string title, int durationSeconds)
+    {
+        _tracks.Add(new Track(Id, number, title, durationSeconds));
     }
 }

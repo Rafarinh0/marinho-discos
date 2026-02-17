@@ -14,7 +14,7 @@ public class TrackConfiguration : IEntityTypeConfiguration<Track>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(t => t.Duration)
+        builder.Property(t => t.DurationSeconds)
             .IsRequired();
 
         builder.HasOne(t => t.Album)

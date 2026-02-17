@@ -4,5 +4,5 @@ using MarinhoDiscos.Domain.Entities;
 public interface IAlbumRepository
 {
     Task<Album?> GetByIdAsync(Guid id);
-    Task AddAsync(Album album);
+    Task AddAsync(Album album, CancellationToken ct = default);
 }
