@@ -1,3 +1,5 @@
+using MarinhoDiscos.Application.Common.Errors;
+using MarinhoDiscos.Application.Common.Exceptions;
 using MarinhoDiscos.Application.DTOs.Albums;
 using MarinhoDiscos.Domain.Repositories;
 using MediatR;
@@ -19,9 +21,10 @@ public class GetAlbumByIdHandler
         CancellationToken ct)
     {
         var album = await _albumRepository.GetDetailsByIdAsync(request.AlbumId, ct);
-
         if (album is null)
-            throw new NotFoundException("Album not found");
+            throw new NotFoundException(
+                ErrorCodes.AlbumNotFound,
+                $"Album '{request.AlbumId}' was not found");
 
         return new AlbumDetailsResponse(
             album.Id,

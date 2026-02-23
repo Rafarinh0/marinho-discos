@@ -1,4 +1,5 @@
 using MarinhoDiscos.Application.DTOs.Albums;
+using MarinhoDiscos.Application.Queries.GetAlbumById;
 using MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -23,5 +24,12 @@ public class AlbumsController : ControllerBase
     {
         var id = await _createAlbumUseCase.ExecuteAsync(request, ct);
         return Created($"/api/albums/{id}", new { id });
+    }
+    
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var result = await _mediator.Send(new GetAlbumByIdQuery(id));
+        return Ok(result);
     }
 }
