@@ -25,4 +25,16 @@ public class AlbumRepository : IAlbumRepository
     {
         await _context.Set<Album>().AddAsync(album, ct);
     }
+    
+    public async Task<Album?> GetDetailsByIdAsync(Guid id, CancellationToken ct)
+    {
+        return await _context.Albums
+            .AsNoTracking()
+            .Include(a => a.Artist)
+            .Include(a => a.Genres)
+            .Include(a => a.Tracks.OrderBy(t => t.Number))
+            .Include(a => a.Reviews)
+            .FirstOrDefaultAsync(a => a.Id == id, ct);
+    }
+
 }

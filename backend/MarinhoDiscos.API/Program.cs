@@ -1,8 +1,10 @@
-﻿using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
+﻿using MarinhoDiscos.Application;
+using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using Microsoft.EntityFrameworkCore;
 using MarinhoDiscos.Infrastructure.Persistence;
 using MarinhoDiscos.Infrastructure.Repositories;
 using MarinhoDiscos.Domain.Repositories;
+using MediatR;
 
 try
 {
@@ -14,6 +16,8 @@ try
     builder.Services.AddDbContext<MarinhoDiscosDbContext>(opt =>
         opt.UseNpgsql(connectionString));
     
+    builder.Services.AddMediatR(cfg =>
+        cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyReference).Assembly));
 
     builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
     builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
