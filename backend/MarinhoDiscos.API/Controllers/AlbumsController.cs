@@ -13,11 +13,11 @@ public class AlbumsController : ControllerBase
     private readonly CreateAlbumUseCase _createAlbumUseCase;
     private readonly IMediator _mediator;
     
-    public AlbumsController(IMediator mediator, CreateAlbumUseCase createAlbumUseCase)
-    {
-        mediator = _mediator;
-        _createAlbumUseCase = createAlbumUseCase;
-    }
+  public AlbumsController(IMediator mediator, CreateAlbumUseCase createAlbumUseCase)
+  {
+      _mediator = mediator;
+      _createAlbumUseCase = createAlbumUseCase;
+  }
 
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CreateAlbumRequest request, CancellationToken ct)

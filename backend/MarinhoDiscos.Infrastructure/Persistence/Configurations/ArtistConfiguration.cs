@@ -2,7 +2,7 @@ using MarinhoDiscos.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DefaultNamespace;
+namespace MarinhoDiscos.Infrastructure.Persistence.Configurations;
 
 public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
 {

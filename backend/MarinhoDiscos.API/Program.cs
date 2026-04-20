@@ -1,4 +1,5 @@
 ﻿using MarinhoDiscos.Application;
+using MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using Microsoft.EntityFrameworkCore;
 using MarinhoDiscos.Infrastructure.Persistence;
@@ -26,6 +27,7 @@ try
     
     builder.Services.AddScoped<CreateArtistUseCase>();
     builder.Services.AddScoped<GetArtistsUseCase>();
+    builder.Services.AddScoped<CreateAlbumUseCase>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
