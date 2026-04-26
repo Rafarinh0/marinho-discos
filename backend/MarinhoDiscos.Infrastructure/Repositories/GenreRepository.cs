@@ -21,4 +21,12 @@ public class GenreRepository : IGenreRepository
             .Where(g => ids.Contains(g.Id))
             .ToListAsync(ct);
     }
+
+    public async Task<List<Genre>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.Genres
+            .AsNoTracking()
+            .OrderBy(g => g.Name)
+            .ToListAsync(ct);
+    }
 }
