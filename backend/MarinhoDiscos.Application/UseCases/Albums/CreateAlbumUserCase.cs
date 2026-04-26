@@ -1,5 +1,7 @@
 namespace MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 
+using MarinhoDiscos.Application.Common.Errors;
+using MarinhoDiscos.Application.Common.Exceptions;
 using MarinhoDiscos.Application.DTOs.Albums;
 using MarinhoDiscos.Domain.Entities;
 using MarinhoDiscos.Domain.Repositories;
@@ -26,12 +28,16 @@ public class CreateAlbumUseCase
     public async Task<Guid> ExecuteAsync(CreateAlbumRequest request, CancellationToken ct = default)
     {
         if (!await _artistRepository.ExistsByIdAsync(request.ArtistId, ct))
-            throw new InvalidOperationException("Artist does not exist");
+            throw new NotFoundException(
+                ErrorCodes.ArtistNotFound,
+                $"Artist '{request.ArtistId}' was not found");
 
         var genres = await _genreRepository.GetByIdsAsync(request.GenreIds, ct);
 
         if (genres.Count != request.GenreIds.Count)
-            throw new InvalidOperationException("One or more genres not found");
+            throw new NotFoundException(
+                ErrorCodes.GenreNotFound,
+                "One or more genres were not found");
 
         //create aggregate root
         var album = new Album(
