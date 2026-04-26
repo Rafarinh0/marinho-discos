@@ -1,6 +1,7 @@
 ﻿using MarinhoDiscos.Application;
 using MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
+using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
 using Microsoft.EntityFrameworkCore;
 using MarinhoDiscos.Infrastructure.Persistence;
 using MarinhoDiscos.Infrastructure.Repositories;
@@ -23,11 +24,13 @@ try
     builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
     builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
     builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+    builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-    
+
     builder.Services.AddScoped<CreateArtistUseCase>();
     builder.Services.AddScoped<GetArtistsUseCase>();
     builder.Services.AddScoped<CreateAlbumUseCase>();
+    builder.Services.AddScoped<CreateReviewUseCase>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
