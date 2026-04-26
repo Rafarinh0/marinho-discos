@@ -1,3 +1,5 @@
+using MarinhoDiscos.Application.Common.Errors;
+using MarinhoDiscos.Application.Common.Exceptions;
 using MarinhoDiscos.Application.DTOs.Artists;
 using MarinhoDiscos.Domain.Entities;
 using MarinhoDiscos.Domain.Repositories;
@@ -18,7 +20,9 @@ public class CreateArtistUseCase
     public async Task<Guid> CreateArtist(CreateArtistRequest request, CancellationToken ct = default)
     {
         if (await _artistRepository.ExistsByNameAsync(request.Name, ct))
-            throw new InvalidOperationException("Artist already exists");
+            throw new ConflictException(
+                ErrorCodes.DuplicateArtist,
+                $"Artist '{request.Name}' already exists");
 
         var artist = new Artist(request.Name);
 
