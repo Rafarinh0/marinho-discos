@@ -36,6 +36,7 @@ public class ExceptionMiddleware
         ex switch
         {
             NotFoundException => StatusCodes.Status404NotFound,
+            ConflictException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status400BadRequest
         };
 }
