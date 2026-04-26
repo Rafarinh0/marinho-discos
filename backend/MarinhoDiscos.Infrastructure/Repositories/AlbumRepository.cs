@@ -25,6 +25,11 @@ public class AlbumRepository : IAlbumRepository
     {
         await _context.Set<Album>().AddAsync(album, ct);
     }
+
+    public Task<bool> ExistsByIdAsync(Guid id, CancellationToken ct)
+    {
+        return _context.Albums.AsNoTracking().AnyAsync(a => a.Id == id, ct);
+    }
     
     public async Task<Album?> GetDetailsByIdAsync(Guid id, CancellationToken ct)
     {
