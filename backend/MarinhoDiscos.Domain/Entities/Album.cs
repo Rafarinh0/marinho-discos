@@ -9,6 +9,9 @@ public class Album
     public string Title { get; private set; }
     public DateTime ReleaseDate { get; private set; }
 
+    public string? ExternalId { get; private set; }
+    public ExternalSource Source { get; private set; }
+
     public Guid ArtistId { get; private set; }
     public Artist Artist { get; private set; }
 
@@ -37,6 +40,29 @@ public class Album
         Title = title;
         ReleaseDate = releaseDate;
         ArtistId = artistId;
+        Source = ExternalSource.Manual;
+    }
+
+    public static Album FromExternal(
+        string title,
+        DateTime releaseDate,
+        Guid artistId,
+        string externalId,
+        ExternalSource source)
+    {
+        if (string.IsNullOrWhiteSpace(externalId))
+            throw new DomainException("ExternalId is required when importing from external source");
+
+        if (source == ExternalSource.Manual)
+            throw new DomainException("FromExternal cannot be used with Manual source");
+
+        var album = new Album(title, releaseDate, artistId)
+        {
+            ExternalId = externalId,
+            Source = source
+        };
+
+        return album;
     }
 
     public void AddGenre(Genre genre)

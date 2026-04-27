@@ -9,6 +9,9 @@ public class Artist
     public DateOnly? debutYear { get; private set; }
     public string Country { get; private set; }
 
+    public string? ExternalId { get; private set; }
+    public ExternalSource Source { get; private set; }
+
     private readonly List<Album> _albums = new();
     public IReadOnlyCollection<Album> Albums => _albums.AsReadOnly();
 
@@ -21,5 +24,23 @@ public class Artist
 
         Id = Guid.NewGuid();
         Name = name;
+        Source = ExternalSource.Manual;
+    }
+
+    public static Artist FromExternal(string name, string externalId, ExternalSource source)
+    {
+        if (string.IsNullOrWhiteSpace(externalId))
+            throw new DomainException("ExternalId is required when importing from external source");
+
+        if (source == ExternalSource.Manual)
+            throw new DomainException("FromExternal cannot be used with Manual source");
+
+        var artist = new Artist(name)
+        {
+            ExternalId = externalId,
+            Source = source
+        };
+
+        return artist;
     }
 }
