@@ -15,6 +15,10 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
             .IsRequired()
             .HasMaxLength(200);
         
+        builder.Property(e => e.Country)
+            .HasMaxLength(100)
+            .IsRequired(false);
+        
         builder.HasMany(a => a.Albums)
             .WithOne(a => a.Artist)
             .HasForeignKey(a => a.ArtistId)

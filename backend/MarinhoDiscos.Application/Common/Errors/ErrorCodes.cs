@@ -8,4 +8,6 @@ public static class ErrorCodes
 
     public const string DuplicateArtist = "duplicate_artist";
     public const string InvalidRating = "invalid_rating";
+    public const string ExternalAlbumNotFound  = "external_album_not_found";
+    public const string ExternalArtistInvalid  = "external_artist_invalid";
 }

@@ -1,3 +1,4 @@
+using MarinhoDiscos.Application.Common.Errors;
 using MarinhoDiscos.Application.Common.Exceptions;
 using MarinhoDiscos.Application.ExternalCatalog;
 using MarinhoDiscos.Domain.Entities;
@@ -40,11 +41,12 @@ public class ImportAlbumFromExternalHandler
         var details = await _catalog.GetAlbumDetailsAsync(request.ExternalId, ct);
         if (details is null)
             throw new NotFoundException(
+                ErrorCodes.ExternalAlbumNotFound,
                 $"Album '{request.ExternalId}' not found in external source");
 
         if (string.IsNullOrEmpty(details.Artist.ExternalId))
-            throw new AppException(
-                "external_artist_missing_id",
+            throw new ValidationException(
+                ErrorCodes.ExternalArtistInvalid,
                 "External album has no associable artist (missing external id)");
 
         var artist = await _artistRepo.GetByExternalIdAsync(
@@ -55,7 +57,8 @@ public class ImportAlbumFromExternalHandler
             artist = Artist.FromExternal(
                 details.Artist.Name,
                 details.Artist.ExternalId,
-                request.Source);
+                request.Source,
+                details.Artist.Country);
             await _artistRepo.AddAsync(artist, ct);
         }
 

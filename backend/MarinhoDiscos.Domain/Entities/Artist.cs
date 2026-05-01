@@ -7,7 +7,7 @@ public class Artist
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public DateOnly? debutYear { get; private set; }
-    public string Country { get; private set; }
+    public string? Country { get; private set; }
 
     public string? ExternalId { get; private set; }
     public ExternalSource Source { get; private set; }
@@ -27,7 +27,11 @@ public class Artist
         Source = ExternalSource.Manual;
     }
 
-    public static Artist FromExternal(string name, string externalId, ExternalSource source)
+    public static Artist FromExternal(
+        string name,
+        string externalId,
+        ExternalSource source,
+        string? country = null)
     {
         if (string.IsNullOrWhiteSpace(externalId))
             throw new DomainException("ExternalId is required when importing from external source");
@@ -38,7 +42,8 @@ public class Artist
         var artist = new Artist(name)
         {
             ExternalId = externalId,
-            Source = source
+            Source = source,
+            Country = country   // ← novo
         };
 
         return artist;
