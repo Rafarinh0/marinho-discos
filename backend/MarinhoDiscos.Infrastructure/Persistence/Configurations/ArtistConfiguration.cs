@@ -19,5 +19,17 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
             .WithOne(a => a.Artist)
             .HasForeignKey(a => a.ArtistId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Property(a => a.ExternalId)
+            .HasMaxLength(100);
+
+        builder.Property(a => a.Source)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.HasIndex(a => new { a.ExternalId, a.Source })
+            .IsUnique()
+            .HasFilter("\"ExternalId\" IS NOT NULL");
     }
 }

@@ -32,6 +32,18 @@ public class AlbumConfiguration : IEntityTypeConfiguration<Album>
             .WithOne(r => r.Album)
             .HasForeignKey(r => r.AlbumId);
         
+        builder.Property(a => a.ExternalId)
+            .HasMaxLength(100);
+
+        builder.Property(a => a.Source)
+            .IsRequired()
+            .HasConversion<string>()//records enum as text
+            .HasMaxLength(20);
+
+        builder.HasIndex(a => new { a.ExternalId, a.Source })
+            .IsUnique()
+            .HasFilter("\"ExternalId\" IS NOT NULL");//partial index
+        
         builder
             .HasMany(a => a.Genres)
             .WithMany(g => g.Albums)
@@ -49,6 +61,5 @@ public class AlbumConfiguration : IEntityTypeConfiguration<Album>
                 {
                     j.HasKey("AlbumId", "GenreId");
                 });
-        
     }
 }
