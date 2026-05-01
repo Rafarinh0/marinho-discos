@@ -1,3 +1,4 @@
+using MarinhoDiscos.Application.Commands.ImportExternalAlbum;
 using MarinhoDiscos.Application.Queries.SearchExternalAlbums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -23,5 +24,15 @@ public class ExternalCatalogController : ControllerBase
     {
         var results = await _mediator.Send(new SearchExternalAlbumsQuery(query, limit), ct);
         return Ok(results);
+    }
+    
+    [HttpPost("albums/{externalId}/import")]
+    public async Task<IActionResult> ImportAlbum(
+        string externalId,
+        CancellationToken ct)
+    {
+        var albumId = await _mediator.Send(
+            new ImportExternalAlbumCommand(externalId), ct);
+        return Created($"/api/albums/{albumId}", new { id = albumId });
     }
 }

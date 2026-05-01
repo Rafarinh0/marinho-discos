@@ -13,6 +13,7 @@ public interface IAlbumRepository
         Guid? artistId,
         Guid? genreId,
         CancellationToken ct);
+    Task<Album?> GetByExternalIdAsync(string externalId, ExternalSource source, CancellationToken ct);
 }
 
 public record AlbumListItem(

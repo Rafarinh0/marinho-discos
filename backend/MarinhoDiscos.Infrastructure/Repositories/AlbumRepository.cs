@@ -74,4 +74,16 @@ public class AlbumRepository : IAlbumRepository
 
         return (items, total);
     }
+    
+    public Task<Album?> GetByExternalIdAsync(
+        string externalId,
+        ExternalSource source,
+        CancellationToken ct)
+    {
+        return _context.Albums
+            .FirstOrDefaultAsync(
+                a => a.ExternalId == externalId && a.Source == source,
+                ct
+            );
+    }
 }

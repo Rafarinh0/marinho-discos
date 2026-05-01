@@ -42,4 +42,16 @@ public class ArtistRepository : IArtistRepository
     {
         return await _context.Artists.AnyAsync(a => a.Id == id, ct);
     }
+    
+    public Task<Artist?> GetByExternalIdAsync(
+        string externalId,
+        ExternalSource source,
+        CancellationToken ct)
+    {
+        return _context.Artists
+            .FirstOrDefaultAsync(
+                a => a.ExternalId == externalId && a.Source == source,
+                ct
+            );
+    }
 }
