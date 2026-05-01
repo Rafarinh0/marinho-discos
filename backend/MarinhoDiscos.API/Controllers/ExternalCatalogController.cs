@@ -1,3 +1,4 @@
+using MarinhoDiscos.Application.Commands;
 using MarinhoDiscos.Application.Commands.ImportExternalAlbum;
 using MarinhoDiscos.Application.Queries.SearchExternalAlbums;
 using MediatR;
@@ -35,4 +36,24 @@ public class ExternalCatalogController : ControllerBase
             new ImportExternalAlbumCommand(externalId), ct);
         return Created($"/api/albums/{albumId}", new { id = albumId });
     }
+    
+    [HttpPost("albums/{externalId}/reviews")]
+    public async Task<IActionResult> CreateReview(
+        string externalId,
+        [FromBody] CreateExternalReviewRequest body,
+        CancellationToken ct)
+    {
+        var result = await _mediator.Send(
+            new CreateReviewForExternalAlbumCommand(
+                externalId,
+                body.Rating,
+                body.Comment),
+            ct);
+
+        return Created(
+            $"/api/albums/{result.AlbumId}/reviews/{result.ReviewId}",
+            result);
+    }
+
+    public record CreateExternalReviewRequest(int Rating, string? Comment);
 }
