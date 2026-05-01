@@ -31,6 +31,25 @@ try
     builder.Services.AddScoped<GetArtistsUseCase>();
     builder.Services.AddScoped<CreateAlbumUseCase>();
     builder.Services.AddScoped<CreateReviewUseCase>();
+    
+    //MusicBrainz
+    builder.Services.Configure<MarinhoDiscos.Infrastructure.ExternalCatalog.MusicBrainz.MusicBrainzOptions>(
+        builder.Configuration.GetSection(
+            MarinhoDiscos.Infrastructure.ExternalCatalog.MusicBrainz.MusicBrainzOptions.SectionName));
+
+    builder.Services
+        .AddHttpClient<
+            MarinhoDiscos.Application.ExternalCatalog.IMusicCatalogClient,
+            MarinhoDiscos.Infrastructure.ExternalCatalog.MusicBrainz.MusicBrainzClient>(
+            (sp, http) =>
+            {
+                var opts = sp.GetRequiredService<
+                    Microsoft.Extensions.Options.IOptions<
+                        MarinhoDiscos.Infrastructure.ExternalCatalog.MusicBrainz.MusicBrainzOptions>>().Value;
+
+                http.BaseAddress = new Uri(opts.BaseUrl);
+                http.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
+            });
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
