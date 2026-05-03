@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using MarinhoDiscos.Application;
 using MarinhoDiscos.Application.Common.Behaviors;
-using MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
 using Microsoft.EntityFrameworkCore;
@@ -29,9 +28,7 @@ try
     builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-    builder.Services.AddScoped<CreateArtistUseCase>();
     builder.Services.AddScoped<GetArtistsUseCase>();
-    builder.Services.AddScoped<CreateAlbumUseCase>();
     builder.Services.AddScoped<CreateReviewUseCase>();
     
     //MusicBrainz

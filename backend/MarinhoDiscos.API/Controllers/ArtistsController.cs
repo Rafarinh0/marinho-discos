@@ -1,4 +1,3 @@
-using MarinhoDiscos.Application.DTOs.Artists;
 using MarinhoDiscos.Application.Queries.GetArtistById;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using MediatR;
@@ -10,25 +9,15 @@ namespace MarinhoDiscos.API.Controllers;
 [Route("api/artists")]
 public class ArtistsController : ControllerBase
 {
-    private readonly CreateArtistUseCase _createArtistUseCase;
     private readonly GetArtistsUseCase _getArtistsUseCase;
     private readonly IMediator _mediator;
 
     public ArtistsController(
-        CreateArtistUseCase createArtistUseCase,
         GetArtistsUseCase getArtistsUseCase,
         IMediator mediator)
     {
-        _createArtistUseCase = createArtistUseCase;
         _getArtistsUseCase = getArtistsUseCase;
         _mediator = mediator;
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateAsync([FromBody] CreateArtistRequest request, CancellationToken ct)
-    {
-        var id = await _createArtistUseCase.CreateArtist(request, ct);
-        return Created($"/api/artists/{id}", new { id });
     }
 
     [HttpGet]
