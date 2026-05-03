@@ -27,9 +27,6 @@ try
     builder.Services.AddScoped<IGenreRepository, GenreRepository>();
     builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-    builder.Services.AddScoped<GetArtistsUseCase>();
-    builder.Services.AddScoped<CreateReviewUseCase>();
     
     //MusicBrainz
     builder.Services.Configure<MarinhoDiscos.Infrastructure.ExternalCatalog.MusicBrainz.MusicBrainzOptions>(

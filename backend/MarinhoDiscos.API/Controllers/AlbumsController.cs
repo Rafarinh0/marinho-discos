@@ -1,3 +1,4 @@
+using MarinhoDiscos.Application.Commands.Reviews;
 using MarinhoDiscos.Application.DTOs.Reviews;
 using MarinhoDiscos.Application.Queries.GetAlbumById;
 using MarinhoDiscos.Application.Queries.ListAlbums;
@@ -42,11 +43,11 @@ public class AlbumsController : ControllerBase
     [HttpPost("{id}/reviews")]
     public async Task<IActionResult> AddReview(
         Guid id,
-        [FromBody] CreateReviewRequest request,
-        [FromServices] CreateReviewUseCase useCase,
+        [FromBody] CreateReviewRequest body,
         CancellationToken ct)
     {
-        var reviewId = await useCase.ExecuteAsync(id, request, ct);
+        var command = new CreateReviewCommand(id, body.Rating, body.Comment);
+        var reviewId = await _mediator.Send(command, ct);
         return Created($"/api/albums/{id}/reviews/{reviewId}", new { id = reviewId });
     }
 }

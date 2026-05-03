@@ -1,4 +1,5 @@
 using MarinhoDiscos.Application.Queries.GetArtistById;
+using MarinhoDiscos.Application.Queries.ListArtists;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -21,10 +22,10 @@ public class ArtistsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> List(CancellationToken ct)
     {
-        var artists = await _getArtistsUseCase.GetAllArtists(ct);
-        return Ok(artists);
+        var result = await _mediator.Send(new ListArtistsQuery(), ct);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]

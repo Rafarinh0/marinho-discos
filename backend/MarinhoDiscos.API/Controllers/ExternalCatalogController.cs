@@ -1,4 +1,5 @@
 using MarinhoDiscos.Application.Commands;
+using MarinhoDiscos.Application.Commands.CreateExternalAlbumReview;
 using MarinhoDiscos.Application.Commands.ImportExternalAlbum;
 using MarinhoDiscos.Application.Queries.SearchExternalAlbums;
 using MediatR;

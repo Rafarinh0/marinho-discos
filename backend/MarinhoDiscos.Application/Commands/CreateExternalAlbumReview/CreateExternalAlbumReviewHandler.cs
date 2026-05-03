@@ -1,35 +1,30 @@
 using MarinhoDiscos.Application.Commands.ImportExternalAlbum;
-using MarinhoDiscos.Application.DTOs.Reviews;
-using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
+using MarinhoDiscos.Application.Commands.Reviews;
 using MediatR;
 
-namespace MarinhoDiscos.Application.Commands.CreateReviewForExternalAlbum;
+namespace MarinhoDiscos.Application.Commands.CreateExternalAlbumReview;
 
 public class CreateReviewForExternalAlbumHandler
     : IRequestHandler<CreateReviewForExternalAlbumCommand, CreateReviewForExternalAlbumResponse>
 {
     private readonly IMediator _mediator;
-    private readonly CreateReviewUseCase _createReview;
 
-    public CreateReviewForExternalAlbumHandler(
-        IMediator mediator,
-        CreateReviewUseCase createReview)
+    public CreateReviewForExternalAlbumHandler(IMediator mediator)
     {
         _mediator = mediator;
-        _createReview = createReview;
     }
 
     public async Task<CreateReviewForExternalAlbumResponse> Handle(
         CreateReviewForExternalAlbumCommand request,
         CancellationToken ct)
     {
-       var albumId = await _mediator.Send(
+        var albumId = await _mediator.Send(
             new ImportExternalAlbumCommand(request.ExternalId, request.Source),
             ct);
 
-        //create review using existing use case
-        var reviewRequest = new CreateReviewRequest(request.Rating, request.Comment);
-        var reviewId = await _createReview.ExecuteAsync(albumId, reviewRequest, ct);
+        var reviewId = await _mediator.Send(
+            new CreateReviewCommand(albumId, request.Rating, request.Comment),
+            ct);
 
         return new CreateReviewForExternalAlbumResponse(albumId, reviewId);
     }

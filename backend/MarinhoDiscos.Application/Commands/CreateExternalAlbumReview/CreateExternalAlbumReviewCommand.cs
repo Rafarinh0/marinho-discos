@@ -1,7 +1,7 @@
 using MarinhoDiscos.Domain.Entities;
 using MediatR;
 
-namespace MarinhoDiscos.Application.Commands;
+namespace MarinhoDiscos.Application.Commands.CreateExternalAlbumReview;
 
 public record CreateReviewForExternalAlbumCommand(
     string ExternalId,
