@@ -8,7 +8,9 @@ public record AlbumDetailsResponse(
     ArtistSummary Artist,
     List<GenreSummary> Genres,
     List<TrackResponse> Tracks,
-    List<ReviewResponse> Reviews
+    List<ReviewResponse> Reviews,
+    decimal? AverageRating,
+    int ReviewCount
 );
 
 public record ArtistSummary(Guid Id, string Name);

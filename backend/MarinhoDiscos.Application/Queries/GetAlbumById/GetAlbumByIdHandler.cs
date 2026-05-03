@@ -26,6 +26,11 @@ public class GetAlbumByIdHandler
                 ErrorCodes.AlbumNotFound,
                 $"Album '{request.AlbumId}' was not found");
 
+        var reviewCount = album.Reviews.Count;
+        var averageRating = reviewCount > 0 
+            ? (decimal?)Math.Round(album.Reviews.Average(r => (decimal)r.Rating.Value), 2)
+                : null;
+
         return new AlbumDetailsResponse(
             album.Id,
             album.Title,
@@ -57,7 +62,9 @@ public class GetAlbumByIdHandler
                     r.Rating.Value,
                     r.Comment,
                     r.CreatedAt
-                )).ToList()
+                )).ToList(),
+            averageRating, 
+            reviewCount
         );
     }
 }
