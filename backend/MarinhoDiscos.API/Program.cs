@@ -1,4 +1,6 @@
-﻿using MarinhoDiscos.Application;
+﻿using FluentValidation;
+using MarinhoDiscos.Application;
+using MarinhoDiscos.Application.Common.Behaviors;
 using MarinhoDiscos.Application.UseCases.Albums.CreateAlbum;
 using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
@@ -50,7 +52,10 @@ try
                 http.BaseAddress = new Uri(opts.BaseUrl);
                 http.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
             });
-
+    builder.Services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyReference).Assembly);
+    builder.Services.AddTransient(
+        typeof(IPipelineBehavior<,>),
+        typeof(ValidationBehavior<,>));
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();

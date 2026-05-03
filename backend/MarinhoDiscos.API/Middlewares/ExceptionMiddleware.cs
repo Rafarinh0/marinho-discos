@@ -17,6 +17,24 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        catch (FluentValidation.ValidationException ex) //order matters
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            var response = new
+            {
+                code = "validation_failed",
+                message = "One or more validation errors occurred",
+                errors = ex.Errors.Select(e => new
+                {
+                    property = e.PropertyName,
+                    error = e.ErrorMessage
+                })
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
         catch (AppException ex)
         {
             context.Response.ContentType = "application/json";
