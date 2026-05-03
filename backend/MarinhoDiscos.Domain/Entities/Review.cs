@@ -20,4 +20,11 @@ public class Review
         Comment = comment;
         CreatedAt = DateTime.UtcNow;
     }
+    
+    public void Update(Rating rating, string? comment)
+    {
+        Rating = rating;
+        Comment = comment;
+    }
+
 }
