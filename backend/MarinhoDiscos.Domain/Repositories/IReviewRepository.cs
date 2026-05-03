@@ -6,4 +6,9 @@ public interface IReviewRepository
     Task AddAsync(Review review, CancellationToken ct = default);
     Task<Review?> GetByIdAsync(Guid id, CancellationToken ct);
     Task<IReadOnlyList<Review>> GetByAlbumIdAsync(Guid albumId, CancellationToken ct);
+    Task<(IReadOnlyList<Review> Items, int Total)> GetPagedByAlbumIdAsync(
+        Guid albumId,
+        int page,
+        int pageSize,
+        CancellationToken ct);
 }

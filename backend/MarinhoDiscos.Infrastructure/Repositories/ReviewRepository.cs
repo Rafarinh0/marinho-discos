@@ -32,4 +32,25 @@ public class ReviewRepository : IReviewRepository
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(ct);
     }
+    
+    public async Task<(IReadOnlyList<Review> Items, int Total)> GetPagedByAlbumIdAsync(
+        Guid albumId,
+        int page,
+        int pageSize,
+        CancellationToken ct)
+    {
+        var query = _context.Set<Review>()
+            .AsNoTracking()
+            .Where(r => r.AlbumId == albumId);
+
+        var total = await query.CountAsync(ct);
+
+        var items = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+        
+        return (items, total);
+    }
 }

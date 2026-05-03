@@ -1,6 +1,7 @@
 using MarinhoDiscos.Application.Commands.Reviews;
 using MarinhoDiscos.Application.DTOs.Reviews;
 using MarinhoDiscos.Application.Queries.GetAlbumById;
+using MarinhoDiscos.Application.Queries.ListAlbumReviews;
 using MarinhoDiscos.Application.Queries.ListAlbums;
 using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
 using MediatR;
@@ -49,5 +50,17 @@ public class AlbumsController : ControllerBase
         var command = new CreateReviewCommand(id, body.Rating, body.Comment);
         var reviewId = await _mediator.Send(command, ct);
         return Created($"/api/albums/{id}/reviews/{reviewId}", new { id = reviewId });
+    }
+    
+    [HttpGet("{id}/reviews")]
+    public async Task<IActionResult> ListReviews(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(
+            new ListAlbumReviewsQuery(id, page, pageSize), ct);
+        return Ok(result);
     }
 }
