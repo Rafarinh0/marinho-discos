@@ -1,6 +1,5 @@
 using MarinhoDiscos.Application.Queries.GetArtistById;
 using MarinhoDiscos.Application.Queries.ListArtists;
-using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,14 +9,11 @@ namespace MarinhoDiscos.API.Controllers;
 [Route("api/artists")]
 public class ArtistsController : ControllerBase
 {
-    private readonly GetArtistsUseCase _getArtistsUseCase;
     private readonly IMediator _mediator;
 
     public ArtistsController(
-        GetArtistsUseCase getArtistsUseCase,
         IMediator mediator)
     {
-        _getArtistsUseCase = getArtistsUseCase;
         _mediator = mediator;
     }
 

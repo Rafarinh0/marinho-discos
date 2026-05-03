@@ -23,15 +23,6 @@ public class ReviewRepository : IReviewRepository
     {
         return await _context.Set<Review>().FindAsync(new object[] { id }, ct);
     }
-
-    public async Task<IReadOnlyList<Review>> GetByAlbumIdAsync(Guid albumId, CancellationToken ct)
-    {
-        return await _context.Set<Review>()
-            .AsNoTracking()
-            .Where(r => r.AlbumId == albumId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(ct);
-    }
     
     public async Task<(IReadOnlyList<Review> Items, int Total)> GetPagedByAlbumIdAsync(
         Guid albumId,

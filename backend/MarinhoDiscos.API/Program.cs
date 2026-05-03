@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using MarinhoDiscos.Application;
 using MarinhoDiscos.Application.Common.Behaviors;
-using MarinhoDiscos.Application.UseCases.Artists.CreateArtist;
-using MarinhoDiscos.Application.UseCases.Reviews.CreateReview;
 using Microsoft.EntityFrameworkCore;
 using MarinhoDiscos.Infrastructure.Persistence;
 using MarinhoDiscos.Infrastructure.Repositories;

@@ -12,6 +12,21 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="UseCases\Albums\**" />
+    <Compile Remove="UseCases\Artists\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="UseCases\Albums\**" />
+    <EmbeddedResource Remove="UseCases\Artists\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="UseCases\Albums\**" />
+    <None Remove="UseCases\Artists\**" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
