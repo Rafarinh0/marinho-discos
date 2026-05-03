@@ -1,24 +1,22 @@
 using MarinhoDiscos.Application.Common.Errors;
 using MarinhoDiscos.Application.Common.Exceptions;
-using MarinhoDiscos.Domain.Exceptions;
 using MarinhoDiscos.Domain.Repositories;
-using MarinhoDiscos.Domain.ValueObjects;
 using MediatR;
 
-namespace MarinhoDiscos.Application.Commands.UpdateReview;
+namespace MarinhoDiscos.Application.Commands.DeleteReview;
 
-public class UpdateReviewHandler : IRequestHandler<UpdateReviewCommand>
+public class DeleteReviewHandler : IRequestHandler<DeleteReviewCommand>
 {
     private readonly IReviewRepository _reviewRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateReviewHandler(IReviewRepository reviewRepository, IUnitOfWork unitOfWork)
+    public DeleteReviewHandler(IReviewRepository reviewRepository, IUnitOfWork unitOfWork)
     {
         _reviewRepository = reviewRepository;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(UpdateReviewCommand request, CancellationToken ct)
+    public async Task Handle(DeleteReviewCommand request, CancellationToken ct)
     {
         var review = await _reviewRepository.GetByIdAsync(request.ReviewId, ct);
         if (review is null)
@@ -26,18 +24,7 @@ public class UpdateReviewHandler : IRequestHandler<UpdateReviewCommand>
                 ErrorCodes.ReviewNotFound,
                 $"Review '{request.ReviewId}' was not found");
 
-        Rating rating;
-        try
-        {
-            rating = new Rating(request.Rating);
-        }
-        catch (DomainException ex)
-        {
-            throw new ConflictException(ErrorCodes.InvalidRating, ex.Message);
-        }
-
-        review.Update(rating, request.Comment);
-
+        _reviewRepository.Remove(review);
         await _unitOfWork.SaveChangesAsync(ct);
     }
 }

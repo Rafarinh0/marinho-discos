@@ -44,4 +44,9 @@ public class ReviewRepository : IReviewRepository
         
         return (items, total);
     }
+    
+    public void Remove(Review review)
+    {
+        _context.Set<Review>().Remove(review);
+    }
 }

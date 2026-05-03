@@ -10,4 +10,5 @@ public interface IReviewRepository
         int page,
         int pageSize,
         CancellationToken ct);
+    void Remove(Review review);
 }
