@@ -7,6 +7,7 @@ import { listAlbums } from '../api/albums';
 import { listGenres } from '../api/genres';
 import { Cover } from '../components/Cover';
 import { Pagination, type PageSize } from '../components/Pagination';
+import { fmtYear } from '../lib/format';
 import type { AlbumListItemResponse, GenreSummary } from '../api/types';
 
 type Layout = 'grid' | 'list';
@@ -48,7 +49,7 @@ export function LibraryPage() {
   const filtered = useMemo(() => {
     const yearTrim = yearFilter.trim();
     if (!yearTrim) return allAlbums;
-    return allAlbums.filter((a) => a.releaseDate.startsWith(yearTrim));
+    return allAlbums.filter((a) => a.releaseDate?.startsWith(yearTrim) ?? false);
   }, [allAlbums, yearFilter]);
 
   // Ordenação client-side
@@ -57,15 +58,17 @@ export function LibraryPage() {
     if (sort === 'artist') arr.sort((a, b) => a.artistName.localeCompare(b.artistName));
     else if (sort === 'title') arr.sort((a, b) => a.title.localeCompare(b.title));
     else if (sort === 'year-new')
-      arr.sort(
-        (a, b) =>
-          new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
-      );
+      arr.sort((a, b) => {
+        const aT = a.releaseDate ? new Date(a.releaseDate).getTime() : -Infinity;
+        const bT = b.releaseDate ? new Date(b.releaseDate).getTime() : -Infinity;
+        return bT - aT;
+      });
     else if (sort === 'year-old')
-      arr.sort(
-        (a, b) =>
-          new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime()
-      );
+      arr.sort((a, b) => {
+        const aT = a.releaseDate ? new Date(a.releaseDate).getTime() : Infinity;
+        const bT = b.releaseDate ? new Date(b.releaseDate).getTime() : Infinity;
+        return aT - bT;
+      });
     return arr;
   }, [filtered, sort]);
 
@@ -370,7 +373,7 @@ function GridView({ albums }: { albums: AlbumListItemResponse[] }) {
                 marginTop: 4,
               }}
             >
-              {a.artistName} · {a.releaseDate.slice(0, 4)}
+              {a.artistName} · {fmtYear(a.releaseDate)}
             </div>
           </div>
         </div>
@@ -407,7 +410,7 @@ function ListView({ albums }: { albums: AlbumListItemResponse[] }) {
                 marginTop: 3,
               }}
             >
-              {a.artistName} · {a.releaseDate.slice(0, 4)}
+              {a.artistName} · {fmtYear(a.releaseDate)}
             </div>
           </div>
           <div
