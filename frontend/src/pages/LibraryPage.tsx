@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useLang } from '../i18n/LangProvider';
 import { listAlbums } from '../api/albums';
 import { listGenres } from '../api/genres';
+import { getLibraryStats } from '../api/stats';
 import { Cover } from '../components/Cover';
 import { Pagination, type PageSize } from '../components/Pagination';
+import { Skeleton } from '../components/Skeleton';
 import { fmtYear } from '../lib/format';
 import type { AlbumListItemResponse, GenreSummary } from '../api/types';
 
@@ -29,6 +31,12 @@ export function LibraryPage() {
   const { data: genres = [] } = useQuery({
     queryKey: ['genres'],
     queryFn: ({ signal }) => listGenres(signal),
+  });
+
+  // Stats agregados — vêm do backend (não dependem da paginação)
+  const statsQuery = useQuery({
+    queryKey: ['library-stats'],
+    queryFn: ({ signal }) => getLibraryStats(signal),
   });
 
   // Single fetch — alto pageSize cobre qualquer biblioteca pessoal
@@ -72,11 +80,10 @@ export function LibraryPage() {
     return arr;
   }, [filtered, sort]);
 
-  const stats = useMemo(() => {
-    const total = filtered.length;
-    const tracks = filtered.reduce((s, a) => s + a.trackCount, 0);
-    return { total, tracks };
-  }, [filtered]);
+  // Hours derivado de totalDurationSeconds (vem do backend)
+  const hours = statsQuery.data
+    ? Math.floor(statsQuery.data.totalDurationSeconds / 3600)
+    : null;
 
   // Slice paginado
   const paginated = useMemo(() => {
@@ -104,8 +111,27 @@ export function LibraryPage() {
             {t('My library', 'Minha biblioteca')}
           </h1>
           <div className="flex gap-6" style={{ flexWrap: 'wrap' }}>
-            <Stat label={t('Albums', 'Álbuns')} value={stats.total} />
-            <Stat label={t('Tracks', 'Faixas')} value={stats.tracks} accent />
+            <Stat
+              label={t('Albums', 'Álbuns')}
+              value={statsQuery.data?.totalAlbums}
+              loading={statsQuery.isLoading}
+            />
+            <Stat
+              label={t('Reviewed', 'Avaliados')}
+              value={statsQuery.data?.reviewedAlbums}
+              loading={statsQuery.isLoading}
+            />
+            <Stat
+              label={t('Avg rating', 'Nota média')}
+              value={statsQuery.data?.averageRating ?? '—'}
+              loading={statsQuery.isLoading}
+              accent
+            />
+            <Stat
+              label={t('Hours of music', 'Horas de música')}
+              value={hours ?? undefined}
+              loading={statsQuery.isLoading}
+            />
           </div>
         </div>
       </header>
@@ -154,23 +180,29 @@ function Stat({
   label,
   value,
   accent,
+  loading,
 }: {
   label: string;
-  value: number;
+  value: number | string | undefined;
   accent?: boolean;
+  loading?: boolean;
 }) {
   return (
     <div>
-      <div
-        className="font-display tabular"
-        style={{
-          fontSize: 36,
-          lineHeight: 1,
-          color: accent ? 'var(--accent)' : 'var(--ink)',
-        }}
-      >
-        {value}
-      </div>
+      {loading ? (
+        <Skeleton width={64} height={36} radius={4} />
+      ) : (
+        <div
+          className="font-display tabular"
+          style={{
+            fontSize: 36,
+            lineHeight: 1,
+            color: accent ? 'var(--accent)' : 'var(--ink)',
+          }}
+        >
+          {value ?? '—'}
+        </div>
+      )}
       <div
         className="font-mono muted"
         style={{
