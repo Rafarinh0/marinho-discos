@@ -53,6 +53,14 @@ try
     builder.Services.AddSwaggerGen();
 
     var app = builder.Build();
+    
+    //apply pending migrations, can be separated in a pipeline later
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider
+            .GetRequiredService<MarinhoDiscosDbContext>();
+        await db.Database.MigrateAsync();
+    }
 
     if (app.Environment.IsDevelopment())
     {

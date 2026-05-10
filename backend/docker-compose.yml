@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    container_name: marinho-discos-db
+    environment:
+      POSTGRES_USER: marinho
+      POSTGRES_PASSWORD: marinhodiscos
+      POSTGRES_DB: marinho_discos
+    ports:
+      - "5432:5432"
+    volumes:
+      - marinho_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marinho -d marinho_discos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: MarinhoDiscos.API/Dockerfile
+    container_name: marinho-discos-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=marinho_discos;Username=marinho;Password=marinhodiscos"
+      MusicBrainz__UserAgent: "MarinhoDiscos/1.0 (https://github.com/Rafarinh0/marinho-discos)"
+    ports:
+      - "8080:8080"
+
+volumes:
+  marinho_db_data:
