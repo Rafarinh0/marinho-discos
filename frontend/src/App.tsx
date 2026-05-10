@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { SearchPage } from './pages/SearchPage';
 import { AlbumPage } from './pages/AlbumPage';
+import { LibraryPage } from './pages/LibraryPage';
 import { useLang } from './i18n/LangProvider';
 
 function Placeholder({ name }: { name: string }) {
@@ -30,7 +31,7 @@ export default function App() {
       <main className="app-main">
         <Routes>
           <Route path="/" element={<SearchPage />} />
-          <Route path="/library" element={<Placeholder name="Library" />} />
+          <Route path="/library" element={<LibraryPage />} />
           <Route path="/albums/:id" element={<AlbumPage />} />
           <Route path="/artists/:id" element={<Placeholder name="Artist" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
