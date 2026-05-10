@@ -1,14 +1,15 @@
-using System.Net;
 using System.Text.Json;
 using MarinhoDiscos.Application.Common.Exceptions;
 
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(RequestDelegate next)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task Invoke(HttpContext context)
@@ -44,6 +45,22 @@ public class ExceptionMiddleware
             {
                 code = ex.Code,
                 message = ex.Message
+            };
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception for {Method} {Path}",
+                context.Request.Method, context.Request.Path);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            var response = new
+            {
+                code = "internal_error",
+                message = "An unexpected error occurred"
             };
 
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
