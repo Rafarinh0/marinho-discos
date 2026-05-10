@@ -208,5 +208,3 @@ Documentação interativa completa em `/swagger` quando rodando em Development.
 - **Global Exception Handling** — middleware único traduzindo exceções de domínio em HTTP
 - **DTOs separados** por use case (leitura ≠ escrita)
 
----
----
