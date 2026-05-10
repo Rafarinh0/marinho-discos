@@ -4,25 +4,7 @@ import { Footer } from './components/Footer';
 import { SearchPage } from './pages/SearchPage';
 import { AlbumPage } from './pages/AlbumPage';
 import { LibraryPage } from './pages/LibraryPage';
-import { useLang } from './i18n/LangProvider';
-
-function Placeholder({ name }: { name: string }) {
-  const { t } = useLang();
-  return (
-    <div className="shell" style={{ paddingTop: 64 }}>
-      <div className="eyebrow" style={{ marginBottom: 8 }}>◯ {name}</div>
-      <h1
-        className="font-display"
-        style={{ fontSize: 'clamp(40px, 6vw, 72px)', margin: '0 0 24px' }}
-      >
-        {name}
-      </h1>
-      <p className="font-serif dim">
-        {t('Coming up in the next phase.', 'Pronto na próxima fase.')}
-      </p>
-    </div>
-  );
-}
+import { ArtistPage } from './pages/ArtistPage';
 
 export default function App() {
   return (
@@ -33,7 +15,7 @@ export default function App() {
           <Route path="/" element={<SearchPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/albums/:id" element={<AlbumPage />} />
-          <Route path="/artists/:id" element={<Placeholder name="Artist" />} />
+          <Route path="/artists/:id" element={<ArtistPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
