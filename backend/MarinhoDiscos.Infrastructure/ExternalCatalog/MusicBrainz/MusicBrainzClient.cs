@@ -43,7 +43,8 @@ public class MusicBrainzClient : IMusicCatalogClient
         if (string.IsNullOrWhiteSpace(externalId))
             return null;
 
-        var url = $"release/{externalId}?inc=recordings+artist-credits&fmt=json";
+        var url = $"release/{externalId}" +
+                         "?inc=recordings+artist-credits+release-groups+genres&fmt=json";
         
         MusicBrainzReleaseResponse? release;
 
@@ -57,6 +58,21 @@ public class MusicBrainzClient : IMusicCatalogClient
         }
 
         if (release == null) return null;
+        
+        var releaseGroupGenres = new List<MusicBrainzGenre>();
+        if (release.ReleaseGroup != null)
+        {
+            var releaseGroupUrl = $"release-group/{release.ReleaseGroup.Id}?inc=genres&fmt=json";
+            try
+            {
+                var releaseGroup = await _http.GetFromJsonAsync<MusicBrainzReleaseGroupResponse>(releaseGroupUrl, ct);
+                if (releaseGroup?.Genres is not null) releaseGroupGenres = releaseGroup.Genres;
+            }
+            catch (HttpRequestException)
+            {
+                //release-group genres are optional, won't fail the import
+            }
+        }
 
         var firstCredit = release.ArtistCredit?.FirstOrDefault();
         var artistReference = firstCredit?.Artist;
@@ -73,6 +89,13 @@ public class MusicBrainzClient : IMusicCatalogClient
                 Title: t.Title,
                 DurationSeconds: (t.Length ?? 0) / 1000))
             .ToList();
+        
+        var genres = (release.Genres ?? new())
+            .Concat(releaseGroupGenres)
+            .Select(g => g.Name.Trim().ToLowerInvariant())
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct()
+            .ToList();
 
         return new ExternalAlbumDetails(
             ExternalId: release.Id,
@@ -80,7 +103,7 @@ public class MusicBrainzClient : IMusicCatalogClient
             ReleaseDate: ParseDate(release.Date),
             Artist: artist,
             Tracks: tracks,
-            Genres: Array.Empty<string>() //to-do -> fetch genres from release-group
+            Genres: genres
         );
     }
     

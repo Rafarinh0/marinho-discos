@@ -6,4 +6,6 @@ public interface IGenreRepository
 {
     Task<List<Genre>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
     Task<List<Genre>> GetAllAsync(CancellationToken ct = default);
+    Task<List<Genre>> GetByNamesAsync(IEnumerable<string> names, CancellationToken ct);
+    Task AddAsync(Genre genre, CancellationToken ct);
 }

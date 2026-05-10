@@ -13,17 +13,20 @@ public class ImportAlbumFromExternalHandler
     private readonly IMusicCatalogClient _catalog;
     private readonly IAlbumRepository _albumRepo;
     private readonly IArtistRepository _artistRepo;
+    private readonly IGenreRepository _genreRepo;
     private readonly IUnitOfWork _uow;
 
     public ImportAlbumFromExternalHandler(
         IMusicCatalogClient catalog,
         IAlbumRepository albumRepo,
         IArtistRepository artistRepo,
+        IGenreRepository genreRepo,
         IUnitOfWork uow)
     {
         _catalog = catalog;
         _albumRepo = albumRepo;
         _artistRepo = artistRepo;
+        _genreRepo = genreRepo;
         _uow = uow;
     }
 
@@ -72,6 +75,24 @@ public class ImportAlbumFromExternalHandler
 
         foreach (var t in details.Tracks)
             album.AddTrack(t.Number, t.Title, t.DurationSeconds);
+        
+        //resolve genres in batch
+        if (details.Genres.Count > 0)
+        {
+            var existingGenres = await _genreRepo.GetByNamesAsync(details.Genres, ct);
+            var existingNames  = existingGenres.Select(g => g.Name).ToHashSet();
+
+            var newGenres = details.Genres
+                .Where(name => !existingNames.Contains(name))
+                .Select(name => new Genre(name))
+                .ToList();
+
+            foreach (var newGenre in newGenres)
+                await _genreRepo.AddAsync(newGenre, ct);
+
+            foreach (var genre in existingGenres.Concat(newGenres))
+                album.AddGenre(genre);
+        }
 
         await _albumRepo.AddAsync(album, ct);
         await _uow.SaveChangesAsync(ct);

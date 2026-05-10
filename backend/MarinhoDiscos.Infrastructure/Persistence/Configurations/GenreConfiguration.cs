@@ -22,5 +22,7 @@ public class GenreConfiguration : IEntityTypeConfiguration<Genre>
                 j => j.HasOne<Album>().WithMany().HasForeignKey("AlbumId"),
                 j => j.HasOne<Genre>().WithMany().HasForeignKey("GenreId")
             );
+        
+        builder.HasIndex(g => g.Name).IsUnique();
     }
 }
