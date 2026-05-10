@@ -1,17 +1,29 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useLang } from '../i18n/LangProvider';
 import { getAlbumById } from '../api/albums';
+import { createReview, deleteReview, updateReview } from '../api/reviews';
 import { Cover } from '../components/Cover';
 import { ReviewCard } from '../components/ReviewCard';
+import { ReviewModal } from '../components/ReviewModal';
 import { fmtTime, fmtTotalTime, ratingBuckets } from '../lib/format';
-import type { AlbumDetailsResponse } from '../api/types';
+import type { AlbumDetailsResponse, ReviewResponse } from '../api/types';
+
+type ReviewingState =
+  | { mode: 'create' }
+  | { mode: 'edit'; review: ReviewResponse }
+  | null;
 
 export function AlbumPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLang();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [reviewing, setReviewing] = useState<ReviewingState>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const { data: album, isLoading, error } = useQuery({
     queryKey: ['album', id],
@@ -19,9 +31,68 @@ export function AlbumPage() {
     enabled: !!id,
   });
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['album', id] });
+    queryClient.invalidateQueries({ queryKey: ['library'] });
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (body: { rating: number; comment: string | null }) =>
+      createReview(id!, body),
+    onSuccess: () => {
+      invalidate();
+      setReviewing(null);
+      setModalError(null);
+    },
+    onError: (err: Error) => setModalError(err.message),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      reviewId,
+      body,
+    }: {
+      reviewId: string;
+      body: { rating: number; comment: string | null };
+    }) => updateReview(reviewId, body),
+    onSuccess: () => {
+      invalidate();
+      setReviewing(null);
+      setModalError(null);
+    },
+    onError: (err: Error) => setModalError(err.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (reviewId: string) => deleteReview(reviewId),
+    onSuccess: () => invalidate(),
+  });
+
+  const handleSave = (data: { rating: number; comment: string | null }) => {
+    if (!reviewing) return;
+    if (reviewing.mode === 'create') {
+      createMutation.mutate(data);
+    } else {
+      updateMutation.mutate({ reviewId: reviewing.review.id, body: data });
+    }
+  };
+
+  const handleDelete = (review: ReviewResponse) => {
+    if (!window.confirm(t('Delete this review?', 'Apagar esta review?'))) return;
+    deleteMutation.mutate(review.id);
+  };
+
+  const closeModal = () => {
+    if (createMutation.isPending || updateMutation.isPending) return;
+    setReviewing(null);
+    setModalError(null);
+  };
+
   if (isLoading) return <Loading />;
   if (error) return <ErrorView message={(error as Error).message} />;
   if (!album) return <NotFoundView />;
+
+  const isSavingModal = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="shell" style={{ paddingTop: 24 }}>
@@ -46,11 +117,27 @@ export function AlbumPage() {
 
       <hr className="rule rule-thick" />
 
-      <Score album={album} onWriteReview={() => alert('Coming up in D5')} />
+      <Score album={album} onWriteReview={() => setReviewing({ mode: 'create' })} />
 
       <hr className="rule" />
 
-      <ContentTwoColumns album={album} />
+      <ContentTwoColumns
+        album={album}
+        onWriteReview={() => setReviewing({ mode: 'create' })}
+        onEditReview={(r) => setReviewing({ mode: 'edit', review: r })}
+        onDeleteReview={handleDelete}
+      />
+
+      {reviewing && (
+        <ReviewModal
+          album={album}
+          existing={reviewing.mode === 'edit' ? reviewing.review : null}
+          onSave={handleSave}
+          onClose={closeModal}
+          isSaving={isSavingModal}
+          errorMessage={modalError}
+        />
+      )}
     </div>
   );
 }
@@ -200,7 +287,7 @@ function Meta({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Score block — rating + distribution + CTA
+// Score block
 
 function Score({
   album,
@@ -308,7 +395,17 @@ function Score({
 // ─────────────────────────────────────────────────────────────────────────
 // Tracklist + Reviews
 
-function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
+function ContentTwoColumns({
+  album,
+  onWriteReview,
+  onEditReview,
+  onDeleteReview,
+}: {
+  album: AlbumDetailsResponse;
+  onWriteReview: () => void;
+  onEditReview: (r: ReviewResponse) => void;
+  onDeleteReview: (r: ReviewResponse) => void;
+}) {
   const { t } = useLang();
 
   return (
@@ -320,7 +417,6 @@ function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
         marginTop: 24,
       }}
     >
-      {/* Tracklist */}
       <div>
         <div className="eyebrow" style={{ marginBottom: 14 }}>
           ◐ {t('Tracklist', 'Faixas')}
@@ -352,7 +448,6 @@ function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
         </ol>
       </div>
 
-      {/* Reviews */}
       <div>
         <div className="flex justify-between items-baseline" style={{ marginBottom: 18 }}>
           <div>
@@ -376,9 +471,12 @@ function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
             >
               ?
             </div>
-            <div className="muted">
+            <div className="muted" style={{ marginBottom: 16 }}>
               {t('No words for this one yet.', 'Ainda sem palavras sobre este.')}
             </div>
+            <button className="btn btn-primary" onClick={onWriteReview}>
+              {t('Write the first review', 'Escrever o primeiro review')}
+            </button>
           </div>
         ) : (
           <div className="flex-col gap-4">
@@ -391,8 +489,8 @@ function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
                 <ReviewCard
                   key={r.id}
                   review={r}
-                  onEdit={() => alert('Coming up in D5')}
-                  onDelete={() => alert('Coming up in D5')}
+                  onEdit={() => onEditReview(r)}
+                  onDelete={() => onDeleteReview(r)}
                 />
               ))}
           </div>
