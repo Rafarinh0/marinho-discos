@@ -4,7 +4,7 @@ public record AlbumDetailsResponse(
     Guid Id,
     string? ExternalId,
     string Title,
-    DateTime ReleaseDate,
+    DateTime? ReleaseDate,
     int DurationSeconds,
     ArtistSummary Artist,
     List<GenreSummary> Genres,

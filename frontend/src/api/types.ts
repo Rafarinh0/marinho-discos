@@ -26,7 +26,7 @@ export interface AlbumDetailsResponse {
   id: string;
   externalId: string | null;
   title: string;
-  releaseDate: string;
+  releaseDate: string | null;
   durationSeconds: number;
   artist: ArtistSummary;
   genres: GenreSummary[];
@@ -40,7 +40,7 @@ export interface AlbumListItemResponse {
   id: string;
   externalId: string | null;
   title: string;
-  releaseDate: string;
+  releaseDate: string | null;
   artistName: string;
   trackCount: number;
 }

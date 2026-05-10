@@ -1,5 +1,11 @@
 // Helpers de formatação compartilhados.
 
+// Extrai "YYYY" do ISO date. null/undefined => "—" (semântica de "desconhecido").
+export function fmtYear(releaseDate: string | null | undefined): string {
+  if (!releaseDate) return '—';
+  return releaseDate.slice(0, 4);
+}
+
 export function fmtTime(s: number): string {
   const m = Math.floor(s / 60);
   const sec = String(s % 60).padStart(2, '0');

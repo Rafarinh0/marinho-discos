@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLang } from '../i18n/LangProvider';
 import { Cover } from './Cover';
+import { fmtYear } from '../lib/format';
 import type { AlbumDetailsResponse, ReviewResponse } from '../api/types';
 
 interface Props {
@@ -100,7 +101,7 @@ export function ReviewModal({
               className="font-mono muted"
               style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}
             >
-              {album.artist.name} · {album.releaseDate.slice(0, 4)}
+              {album.artist.name} · {fmtYear(album.releaseDate)}
             </div>
           </div>
           <button

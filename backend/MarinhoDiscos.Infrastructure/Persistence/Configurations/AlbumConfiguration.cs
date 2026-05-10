@@ -16,7 +16,7 @@ public class AlbumConfiguration : IEntityTypeConfiguration<Album>
             .HasMaxLength(200);
 
         builder.Property(a => a.ReleaseDate)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.HasOne(a => a.Artist)
             .WithMany(ar => ar.Albums)

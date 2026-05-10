@@ -113,13 +113,13 @@ public class MusicBrainzClient : IMusicCatalogClient
         return int.TryParse(date.Split('-')[0], out var y) ? y : null;
     }
     
-    private static DateTime ParseDate(string? date)
+    private static DateTime? ParseDate(string? date)
     {
-        if (string.IsNullOrEmpty(date)) return DateTime.MinValue;
+        if (string.IsNullOrEmpty(date)) return null;
         // MusicBrainz: "1997", "1997-05", "1997-05-21" are all valid
         if (DateTime.TryParse(date, out var d)) return DateTime.SpecifyKind(d, DateTimeKind.Utc);
         if (int.TryParse(date.Split('-')[0], out var y))
             return new DateTime(y, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        return DateTime.MinValue;
+        return null;
     }
 }

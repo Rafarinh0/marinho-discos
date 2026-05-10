@@ -4,7 +4,7 @@ public record AlbumListItemResponse(
     Guid Id,
     string? ExternalId,
     string Title,
-    DateTime ReleaseDate,
+    DateTime? ReleaseDate,
     string ArtistName,
     int TrackCount
 );

@@ -8,6 +8,7 @@ import { listAlbums } from '../api/albums';
 import { Cover } from '../components/Cover';
 import { HeroVisual, type HeroAlbum } from '../components/HeroVisual';
 import { ResultsGrid } from '../components/ResultsGrid';
+import { fmtYear } from '../lib/format';
 import type { AlbumListItemResponse } from '../api/types';
 
 export function SearchPage() {
@@ -249,7 +250,7 @@ function LibraryThumbsGrid({ items }: { items: AlbumListItemResponse[] }) {
                 marginTop: 4,
               }}
             >
-              {a.artistName} · {a.releaseDate.slice(0, 4)}
+              {a.artistName} · {fmtYear(a.releaseDate)}
             </div>
           </div>
         </div>

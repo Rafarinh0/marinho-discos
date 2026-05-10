@@ -7,7 +7,7 @@ public class Album
 {
     public Guid Id { get; private set; }
     public string Title { get; private set; }
-    public DateTime ReleaseDate { get; private set; }
+    public DateTime? ReleaseDate { get; private set; }
 
     public string? ExternalId { get; private set; }
     public ExternalSource Source { get; private set; }
@@ -28,12 +28,12 @@ public class Album
 
     protected Album() { }
 
-    public Album(string title, DateTime releaseDate, Guid artistId)
+    public Album(string title, DateTime? releaseDate, Guid artistId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new DomainException("Album title is required");
 
-        if (releaseDate > DateTime.UtcNow)
+        if (releaseDate.HasValue && releaseDate.Value > DateTime.UtcNow)
             throw new DomainException("Release date cannot be in the future");
 
         Id = Guid.NewGuid();
@@ -45,7 +45,7 @@ public class Album
 
     public static Album FromExternal(
         string title,
-        DateTime releaseDate,
+        DateTime? releaseDate,
         Guid artistId,
         string externalId,
         ExternalSource source)

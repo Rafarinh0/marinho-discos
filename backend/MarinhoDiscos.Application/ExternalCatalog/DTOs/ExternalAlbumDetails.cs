@@ -3,7 +3,7 @@ namespace MarinhoDiscos.Application.ExternalCatalog.DTOs;
 public record ExternalAlbumDetails(
     string ExternalId,
     string Title,
-    DateTime ReleaseDate,
+    DateTime? ReleaseDate,
     ExternalArtistInfo Artist,
     IReadOnlyList<ExternalTrackInfo> Tracks,
     IReadOnlyList<string> Genres

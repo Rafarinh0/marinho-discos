@@ -8,7 +8,7 @@ import { createReview, deleteReview, updateReview } from '../api/reviews';
 import { Cover } from '../components/Cover';
 import { ReviewCard } from '../components/ReviewCard';
 import { ReviewModal } from '../components/ReviewModal';
-import { fmtTime, fmtTotalTime, ratingBuckets } from '../lib/format';
+import { fmtTime, fmtTotalTime, fmtYear, ratingBuckets } from '../lib/format';
 import type { AlbumDetailsResponse, ReviewResponse } from '../api/types';
 
 type ReviewingState =
@@ -148,7 +148,7 @@ export function AlbumPage() {
 function Hero({ album }: { album: AlbumDetailsResponse }) {
   const { t } = useLang();
   const navigate = useNavigate();
-  const year = album.releaseDate.slice(0, 4);
+  const year = fmtYear(album.releaseDate);
 
   return (
     <section
