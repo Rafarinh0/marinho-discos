@@ -11,6 +11,7 @@
 
 ## Env & Secrets
 **/.env*
+!**/.env.example
 **/appsettings.*.json
 
 ## IDEs
