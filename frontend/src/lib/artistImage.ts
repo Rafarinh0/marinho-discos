@@ -1,12 +1,10 @@
-// Resolve a imagem de um artista pelo MBID:
-// 1. MusicBrainz: GET /artist/{mbid}?inc=url-rels — encontra o link de Wikidata
-//    (MB descontinuou as relações 'wikipedia' diretas; tudo passa por Wikidata agora)
-// 2. Wikidata: GET /wiki/Special:EntityData/{Qid}.json — pega o claim P18 (imagem)
-// 3. Commons: monta URL Special:FilePath?width=500 — serve a imagem
+// Resolve enriquecimento de artista pelo MBID:
+// 1. MusicBrainz: GET /artist/{mbid}?inc=url-rels — descobre Wikidata QID
+// 2. Wikidata: GET /wiki/Special:EntityData/{Qid}.json — image, dates, sitelinks, description
+// 3. Wikipedia: GET /api/rest_v1/page/summary/{title} — bio (extract)
 //
-// Tudo do browser direto. MB, Wikidata e Commons todos suportam CORS.
-// Se qualquer passo falhar (sem link, sem P18, etc.), retorna null —
-// o componente cai pro layout só-typography graciosamente.
+// Tudo do browser. Se qualquer passo falhar, campos individuais ficam null —
+// UI degrada graciosamente (omite o pedaço, mantém o resto).
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -16,19 +14,49 @@ interface MbUrlRel {
 }
 
 interface MbArtistResponse {
-  id: string;
-  name: string;
   relations?: MbUrlRel[];
+}
+
+interface WikidataTimeValue {
+  time?: string; // "+1968-05-04T00:00:00Z" ou "+1985-00-00T00:00:00Z"
 }
 
 interface WikidataClaim {
   mainsnak?: {
-    datavalue?: { value?: string };
+    datavalue?: { value?: string | WikidataTimeValue };
   };
 }
 
-interface WikidataEntity {
-  entities?: Record<string, { claims?: { P18?: WikidataClaim[] } }>;
+interface WikidataEntityData {
+  descriptions?: { en?: { value?: string } };
+  claims?: {
+    P18?: WikidataClaim[];  // image
+    P569?: WikidataClaim[]; // date of birth
+    P570?: WikidataClaim[]; // date of death
+    P571?: WikidataClaim[]; // inception (formação)
+    P576?: WikidataClaim[]; // dissolution (dissolução)
+  };
+  sitelinks?: { enwiki?: { title?: string; url?: string } };
+}
+
+interface WikidataResponse {
+  entities?: Record<string, WikidataEntityData>;
+}
+
+interface WikipediaSummary {
+  extract?: string;
+  content_urls?: { desktop?: { page?: string } };
+}
+
+export interface ArtistEnrichment {
+  imageUrl: string | null;
+  shortDescription: string | null; // 1-liner do Wikidata
+  bio: string | null;              // 2-3 sentenças do Wikipedia summary
+  birth: number | null;
+  death: number | null;
+  inception: number | null;
+  dissolution: number | null;
+  wikipediaUrl: string | null;
 }
 
 const MB_BASE = 'https://musicbrainz.org/ws/2';
@@ -53,51 +81,113 @@ function extractWikidataQid(rels: MbUrlRel[]): string | null {
 async function fetchWikidataEntity(
   qid: string,
   signal?: AbortSignal
-): Promise<WikidataEntity> {
+): Promise<WikidataEntityData | null> {
   const url = `https://www.wikidata.org/wiki/Special:EntityData/${qid}.json`;
   const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`Wikidata ${res.status}`);
-  return res.json();
+  if (!res.ok) return null;
+  const json = (await res.json()) as WikidataResponse;
+  return json.entities?.[qid] ?? null;
 }
 
-function extractP18Filename(entity: WikidataEntity, qid: string): string | null {
-  const claim = entity.entities?.[qid]?.claims?.P18?.[0];
-  return claim?.mainsnak?.datavalue?.value ?? null;
+function extractClaimString(claim?: WikidataClaim): string | null {
+  const value = claim?.mainsnak?.datavalue?.value;
+  return typeof value === 'string' ? value : null;
+}
+
+function extractClaimYear(claim?: WikidataClaim): number | null {
+  const value = claim?.mainsnak?.datavalue?.value;
+  if (!value || typeof value !== 'object' || !value.time) return null;
+  // Format: "+1968-05-04T00:00:00Z" — pula o sinal, pega os primeiros 4 dígitos
+  const match = value.time.match(/^[+-]?(\d{4})/);
+  return match ? parseInt(match[1], 10) : null;
 }
 
 function buildCommonsUrl(filename: string, width = 500): string {
-  // Special:FilePath aceita o nome do arquivo URL-encoded; serve a imagem direto
-  // (com redirect 302 pra storage). ?width= redimensiona on-the-fly.
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(
     filename
   )}?width=${width}`;
 }
 
-async function resolveArtistImage(
-  mbid: string,
+async function fetchWikipediaSummary(
+  title: string,
   signal?: AbortSignal
-): Promise<string | null> {
-  const mb = await fetchArtistMb(mbid, signal);
-  const qid = extractWikidataQid(mb.relations ?? []);
-  if (!qid) return null;
-
-  try {
-    const wd = await fetchWikidataEntity(qid, signal);
-    const filename = extractP18Filename(wd, qid);
-    if (!filename) return null;
-    return buildCommonsUrl(filename, 500);
-  } catch {
-    // Wikidata 404 ou shape inesperado → sem imagem
-    return null;
-  }
+): Promise<WikipediaSummary | null> {
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+  const res = await fetch(url, { signal });
+  if (!res.ok) return null;
+  return res.json();
 }
 
-export function useArtistImage(mbid: string | null | undefined) {
+async function resolveArtistEnrichment(
+  mbid: string,
+  signal?: AbortSignal
+): Promise<ArtistEnrichment> {
+  const empty: ArtistEnrichment = {
+    imageUrl: null,
+    shortDescription: null,
+    bio: null,
+    birth: null,
+    death: null,
+    inception: null,
+    dissolution: null,
+    wikipediaUrl: null,
+  };
+
+  // Etapa 1 — MB → QID
+  const mb = await fetchArtistMb(mbid, signal);
+  const qid = extractWikidataQid(mb.relations ?? []);
+  if (!qid) return empty;
+
+  // Etapa 2 — Wikidata
+  const entity = await fetchWikidataEntity(qid, signal);
+  if (!entity) return empty;
+
+  const claims = entity.claims ?? {};
+  const filename = extractClaimString(claims.P18?.[0]);
+  const birth = extractClaimYear(claims.P569?.[0]);
+  const death = extractClaimYear(claims.P570?.[0]);
+  const inception = extractClaimYear(claims.P571?.[0]);
+  const dissolution = extractClaimYear(claims.P576?.[0]);
+  const shortDescription = entity.descriptions?.en?.value ?? null;
+  const enwikiTitle = entity.sitelinks?.enwiki?.title ?? null;
+  const wikipediaUrl = entity.sitelinks?.enwiki?.url ?? null;
+
+  // Etapa 3 — Wikipedia summary (best-effort, falha não derruba o resto)
+  let bio: string | null = null;
+  if (enwikiTitle) {
+    try {
+      const summary = await fetchWikipediaSummary(enwikiTitle, signal);
+      bio = summary?.extract ?? null;
+    } catch {
+      bio = null;
+    }
+  }
+
+  return {
+    imageUrl: filename ? buildCommonsUrl(filename, 500) : null,
+    shortDescription,
+    bio,
+    birth,
+    death,
+    inception,
+    dissolution,
+    wikipediaUrl,
+  };
+}
+
+// Hook principal — retorna o objeto inteiro
+export function useArtistEnrichment(mbid: string | null | undefined) {
   return useQuery({
-    queryKey: ['artist-image', mbid],
-    queryFn: ({ signal }) => resolveArtistImage(mbid!, signal),
+    queryKey: ['artist-enrichment', mbid],
+    queryFn: ({ signal }) => resolveArtistEnrichment(mbid!, signal),
     enabled: !!mbid && /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(mbid),
-    staleTime: 24 * 60 * 60 * 1000, // 24h — imagem de artista raramente muda
-    retry: false, // se MB não tem link, retentar não resolve
+    staleTime: 24 * 60 * 60 * 1000,
+    retry: false,
   });
+}
+
+// Compat layer: mantém useArtistImage funcionando pra quem já usa
+export function useArtistImage(mbid: string | null | undefined) {
+  const q = useArtistEnrichment(mbid);
+  return { ...q, data: q.data?.imageUrl ?? null };
 }

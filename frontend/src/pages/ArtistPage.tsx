@@ -7,7 +7,7 @@ import { getArtistById } from '../api/artists';
 import { listAlbums } from '../api/albums';
 import { Cover } from '../components/Cover';
 import { fmtYear } from '../lib/format';
-import { useArtistImage } from '../lib/artistImage';
+import { useArtistEnrichment, type ArtistEnrichment } from '../lib/artistImage';
 import type { AlbumListItemResponse } from '../api/types';
 
 export function ArtistPage() {
@@ -119,69 +119,156 @@ interface ArtistHeroProps {
 
 function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroProps) {
   const { t } = useLang();
-  const { data: imageUrl } = useArtistImage(artist.externalId);
+  const { data: enrichment } = useArtistEnrichment(artist.externalId);
+
+  // Year span: prioriza Wikidata (mais acurado), fallback pra derivado dos álbuns
+  const headerYears = formatHeaderYears(enrichment, t) ?? yearSpan;
+  const imageUrl = enrichment?.imageUrl ?? null;
 
   return (
-    <header
+    <>
+      <header
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 40,
+          alignItems: 'flex-end',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ flex: '1 1 360px', minWidth: 0 }}>
+          <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>
+            ▸ {t('Artist', 'Artista')} · {headerYears}
+          </div>
+          <h1
+            className="font-display"
+            style={{
+              fontSize: imageUrl ? 'clamp(48px, 7vw, 104px)' : 'clamp(56px, 9vw, 132px)',
+              lineHeight: 0.92,
+              margin: 0,
+              letterSpacing: '-0.025em',
+              textWrap: 'balance' as const,
+            }}
+          >
+            {artist.name}
+          </h1>
+          {enrichment?.shortDescription && (
+            <div
+              className="font-serif italic"
+              style={{
+                marginTop: 14,
+                fontSize: 18,
+                color: 'var(--ink-2)',
+                textTransform: 'lowercase',
+                letterSpacing: '0.005em',
+              }}
+            >
+              {enrichment.shortDescription}
+            </div>
+          )}
+          <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
+            <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albumsCount} />
+            <Stat label={t('Tracks', 'Faixas')} value={tracksCount} accent />
+          </div>
+        </div>
+
+        {imageUrl && (
+          <div
+            style={{
+              flex: '0 0 auto',
+              width: 'min(240px, 100%)',
+              aspectRatio: '1',
+              overflow: 'hidden',
+              borderRadius: 12,
+              background: 'var(--bg-3)',
+              boxShadow: 'var(--shadow)',
+            }}
+          >
+            <img
+              src={imageUrl}
+              alt={artist.name}
+              referrerPolicy="no-referrer"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          </div>
+        )}
+      </header>
+
+      {enrichment?.bio && (
+        <Bio
+          text={enrichment.bio}
+          wikipediaUrl={enrichment.wikipediaUrl}
+        />
+      )}
+    </>
+  );
+}
+
+function Bio({ text, wikipediaUrl }: { text: string; wikipediaUrl: string | null }) {
+  const { t } = useLang();
+  const truncated = text.length > 400 ? text.slice(0, 400).replace(/\s+\S*$/, '') + '…' : text;
+
+  return (
+    <div
+      className="font-serif"
       style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 40,
-        alignItems: 'flex-end',
         marginBottom: 40,
+        maxWidth: 720,
+        fontSize: 17,
+        lineHeight: 1.55,
+        color: 'var(--ink-2)',
+        textWrap: 'pretty' as const,
       }}
     >
-      {/* Texto: ocupa o espaço disponível, mínimo confortável de 360px antes de wrappar */}
-      <div style={{ flex: '1 1 360px', minWidth: 0 }}>
-        <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>
-          ▸ {t('Artist', 'Artista')} · {yearSpan}
-        </div>
-        <h1
-          className="font-display"
-          style={{
-            fontSize: imageUrl ? 'clamp(48px, 7vw, 104px)' : 'clamp(56px, 9vw, 132px)',
-            lineHeight: 0.92,
-            margin: 0,
-            letterSpacing: '-0.025em',
-            textWrap: 'balance' as const,
-          }}
-        >
-          {artist.name}
-        </h1>
-        <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
-          <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albumsCount} />
-          <Stat label={t('Tracks', 'Faixas')} value={tracksCount} accent />
-        </div>
-      </div>
-
-      {/* Imagem: fica à direita; em telas estreitas, wrappa pra baixo capada em 240px */}
-      {imageUrl && (
-        <div
-          style={{
-            flex: '0 0 auto',
-            width: 'min(240px, 100%)',
-            aspectRatio: '1',
-            overflow: 'hidden',
-            borderRadius: 12,
-            background: 'var(--bg-3)',
-            boxShadow: 'var(--shadow)',
-          }}
-        >
-          <img
-            src={imageUrl}
-            alt={artist.name}
-            referrerPolicy="no-referrer"
+      {truncated}
+      {wikipediaUrl && (
+        <>
+          {' '}
+          <a
+            href={wikipediaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono"
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
+              color: 'var(--accent)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              borderBottom: '1px solid color-mix(in oklab, var(--accent) 50%, transparent)',
+              paddingBottom: 1,
+              whiteSpace: 'nowrap',
             }}
-          />
-        </div>
+          >
+            {t('Read on Wikipedia ↗', 'Ver na Wikipedia ↗')}
+          </a>
+        </>
       )}
-    </header>
+    </div>
   );
+}
+
+// Formata "1985 – present" / "1968 – 1991" / "1968 –"
+function formatHeaderYears(
+  e: ArtistEnrichment | undefined,
+  t: (en: string, pt: string) => string
+): string | null {
+  if (!e) return null;
+  // Banda
+  if (e.inception != null) {
+    if (e.dissolution != null) return `${e.inception} – ${e.dissolution}`;
+    return `${e.inception} – ${t('present', 'presente')}`;
+  }
+  // Solo
+  if (e.birth != null) {
+    if (e.death != null) return `${e.birth} – ${e.death}`;
+    return `b. ${e.birth}`;
+  }
+  return null;
 }
 
 function DiscographyRow({ album }: { album: AlbumListItemResponse }) {
