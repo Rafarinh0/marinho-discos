@@ -1,6 +1,6 @@
 # 🎵 Marinho Discos
 
-> Aplicação fullstack para catalogar, avaliar e explorar álbuns musicais — inspirada em sites como RateYourMusic e Discogs, com integração ao catálogo do **MusicBrainz**.
+> Aplicação para catalogar, avaliar e explorar álbuns musicais — inspirada em sites como RateYourMusic e Discogs, com integração ao catálogo do **MusicBrainz**.
 
 <p align="center">
   <img alt=".NET" src="https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white">
