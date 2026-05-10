@@ -6,6 +6,7 @@ import { useLang } from '../i18n/LangProvider';
 import { getArtistById } from '../api/artists';
 import { listAlbums } from '../api/albums';
 import { Cover } from '../components/Cover';
+import { Skeleton } from '../components/Skeleton';
 import { fmtYear } from '../lib/format';
 import { useArtistEnrichment, type ArtistEnrichment } from '../lib/artistImage';
 import type { AlbumListItemResponse } from '../api/types';
@@ -119,11 +120,16 @@ interface ArtistHeroProps {
 
 function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroProps) {
   const { t } = useLang();
-  const { data: enrichment } = useArtistEnrichment(artist.externalId);
+  const enrichmentQuery = useArtistEnrichment(artist.externalId);
+  const enrichment = enrichmentQuery.data;
+  const isEnriching = enrichmentQuery.isLoading;
 
-  // Year span: prioriza Wikidata (mais acurado), fallback pra derivado dos álbuns
   const headerYears = formatHeaderYears(enrichment, t) ?? yearSpan;
   const imageUrl = enrichment?.imageUrl ?? null;
+
+  //gets image slot while enriching, to avoid layout-shift when the image arrives
+  //if the enriching is finished and there's no image, the slot vanishes
+  const showImageSlot = isEnriching || !!imageUrl;
 
   return (
     <>
@@ -143,7 +149,7 @@ function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroPr
           <h1
             className="font-display"
             style={{
-              fontSize: imageUrl ? 'clamp(48px, 7vw, 104px)' : 'clamp(56px, 9vw, 132px)',
+              fontSize: showImageSlot ? 'clamp(48px, 7vw, 104px)' : 'clamp(56px, 9vw, 132px)',
               lineHeight: 0.92,
               margin: 0,
               letterSpacing: '-0.025em',
@@ -152,7 +158,15 @@ function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroPr
           >
             {artist.name}
           </h1>
-          {enrichment?.shortDescription && (
+
+          {isEnriching ? (
+            <Skeleton
+              width={220}
+              height={20}
+              radius={4}
+              style={{ marginTop: 14 }}
+            />
+          ) : enrichment?.shortDescription ? (
             <div
               className="font-serif italic"
               style={{
@@ -165,14 +179,15 @@ function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroPr
             >
               {enrichment.shortDescription}
             </div>
-          )}
+          ) : null}
+
           <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
             <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albumsCount} />
             <Stat label={t('Tracks', 'Faixas')} value={tracksCount} accent />
           </div>
         </div>
 
-        {imageUrl && (
+        {showImageSlot && (
           <div
             style={{
               flex: '0 0 auto',
@@ -181,30 +196,38 @@ function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroPr
               overflow: 'hidden',
               borderRadius: 12,
               background: 'var(--bg-3)',
-              boxShadow: 'var(--shadow)',
+              boxShadow: imageUrl ? 'var(--shadow)' : 'none',
             }}
           >
-            <img
-              src={imageUrl}
-              alt={artist.name}
-              referrerPolicy="no-referrer"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
+            {isEnriching ? (
+              <Skeleton aspectRatio="1" radius={12} />
+            ) : imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={artist.name}
+                referrerPolicy="no-referrer"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            ) : null}
           </div>
         )}
       </header>
 
-      {enrichment?.bio && (
-        <Bio
-          text={enrichment.bio}
-          wikipediaUrl={enrichment.wikipediaUrl}
+      {/* Bio: skeleton enquanto enriching, depois aparece ou some */}
+      {isEnriching ? (
+        <Skeleton
+          height={80}
+          radius={6}
+          style={{ maxWidth: 720, marginBottom: 40 }}
         />
-      )}
+      ) : enrichment?.bio ? (
+        <Bio text={enrichment.bio} wikipediaUrl={enrichment.wikipediaUrl} />
+      ) : null}
     </>
   );
 }
@@ -252,13 +275,12 @@ function Bio({ text, wikipediaUrl }: { text: string; wikipediaUrl: string | null
   );
 }
 
-// Formata "1985 – present" / "1968 – 1991" / "1968 –"
 function formatHeaderYears(
   e: ArtistEnrichment | undefined,
   t: (en: string, pt: string) => string
 ): string | null {
   if (!e) return null;
-  // Banda
+  // Band
   if (e.inception != null) {
     if (e.dissolution != null) return `${e.inception} – ${e.dissolution}`;
     return `${e.inception} – ${t('present', 'presente')}`;
@@ -365,13 +387,53 @@ function Stat({
 // States
 
 function Loading() {
-  const { t } = useLang();
   return (
-    <div className="shell" style={{ paddingTop: 80, textAlign: 'center' }}>
-      <div className="font-display" style={{ fontSize: 48, marginBottom: 8 }}>
-        ◐
+    <div className="shell" style={{ paddingTop: 24 }}>
+      <Skeleton width={100} height={14} radius={4} style={{ marginBottom: 24 }} />
+
+      <header
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 40,
+          alignItems: 'flex-end',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ flex: '1 1 360px', minWidth: 0 }}>
+          <Skeleton width={180} height={12} radius={4} style={{ marginBottom: 14 }} />
+          <Skeleton height={96} radius={8} style={{ marginBottom: 18 }} />
+          <Skeleton width="60%" height={20} radius={4} style={{ marginBottom: 28 }} />
+          <div style={{ display: 'flex', gap: 32 }}>
+            <Skeleton width={80} height={36} radius={4} />
+            <Skeleton width={80} height={36} radius={4} />
+          </div>
+        </div>
+        <Skeleton
+          width={240}
+          aspectRatio="1"
+          radius={12}
+          style={{ flex: '0 0 auto' }}
+        />
+      </header>
+
+      {/* Bio */}
+      <Skeleton height={80} radius={6} style={{ maxWidth: 720, marginBottom: 40 }} />
+
+      <hr className="rule rule-thick" />
+
+      {/* Discography */}
+      <div style={{ marginTop: 24 }}>
+        <Skeleton width={120} height={12} radius={4} style={{ marginBottom: 18 }} />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton
+            key={i}
+            height={88}
+            radius={8}
+            style={{ marginBottom: 8 }}
+          />
+        ))}
       </div>
-      <div className="muted">{t('Loading artist…', 'Carregando artista…')}</div>
     </div>
   );
 }

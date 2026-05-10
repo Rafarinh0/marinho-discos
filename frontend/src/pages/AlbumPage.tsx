@@ -8,6 +8,7 @@ import { createReview, deleteReview, updateReview } from '../api/reviews';
 import { Cover } from '../components/Cover';
 import { ReviewCard } from '../components/ReviewCard';
 import { ReviewModal } from '../components/ReviewModal';
+import { Skeleton } from '../components/Skeleton';
 import { fmtTime, fmtTotalTime, fmtYear, ratingBuckets } from '../lib/format';
 import type { AlbumDetailsResponse, ReviewResponse } from '../api/types';
 
@@ -504,13 +505,88 @@ function ContentTwoColumns({
 // States
 
 function Loading() {
-  const { t } = useLang();
   return (
-    <div className="shell" style={{ paddingTop: 80, textAlign: 'center' }}>
-      <div className="font-display" style={{ fontSize: 48, marginBottom: 8 }}>
-        ◐
-      </div>
-      <div className="muted">{t('Loading album…', 'Carregando álbum…')}</div>
+    <div className="shell" style={{ paddingTop: 24 }}>
+      <Skeleton width={120} height={14} radius={4} style={{ marginBottom: 24 }} />
+
+      {/* Hero: cover + meta */}
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(280px, 380px) 1fr',
+          gap: 56,
+          alignItems: 'flex-end',
+          marginBottom: 48,
+        }}
+      >
+        <Skeleton aspectRatio="1" radius={4} />
+        <div>
+          <Skeleton width={80} height={12} radius={4} style={{ marginBottom: 16 }} />
+          <Skeleton width="80%" height={72} radius={6} style={{ marginBottom: 18 }} />
+          <Skeleton width={220} height={22} radius={4} style={{ marginBottom: 28 }} />
+          <div style={{ display: 'flex', gap: 24, marginBottom: 22 }}>
+            <Skeleton width={80} height={36} radius={4} />
+            <Skeleton width={80} height={36} radius={4} />
+            <Skeleton width={80} height={36} radius={4} />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Skeleton width={70} height={26} radius={999} />
+            <Skeleton width={70} height={26} radius={999} />
+          </div>
+        </div>
+      </section>
+
+      <hr className="rule rule-thick" />
+
+      {/* Score */}
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '280px 1fr auto',
+          gap: 48,
+          alignItems: 'center',
+          padding: '20px 0 36px',
+        }}
+      >
+        <Skeleton width={150} height={70} radius={6} />
+        <Skeleton height={56} radius={4} />
+        <Skeleton width={160} height={44} radius={999} />
+      </section>
+
+      <hr className="rule" />
+
+      {/* Tracklist + reviews */}
+      <section
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1.5fr',
+          gap: 56,
+          marginTop: 24,
+        }}
+      >
+        <div>
+          <Skeleton width={80} height={12} radius={4} style={{ marginBottom: 14 }} />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              height={36}
+              radius={4}
+              style={{ marginBottom: 8 }}
+            />
+          ))}
+        </div>
+        <div>
+          <Skeleton width={120} height={12} radius={4} style={{ marginBottom: 14 }} />
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              height={140}
+              radius={14}
+              style={{ marginBottom: 16 }}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

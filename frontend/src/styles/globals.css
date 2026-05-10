@@ -418,6 +418,30 @@ hr.rule-thick {
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin { animation: spin 8s linear infinite; }
 
+/* Skeleton shimmer */
+.md-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-3) 25%,
+    color-mix(in oklab, var(--bg-3) 50%, var(--rule-2)) 50%,
+    var(--bg-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: md-skeleton-shimmer 1.6s linear infinite;
+}
+@keyframes md-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.app-main > .route-transition {
+  animation: routeFadeIn 0.28s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes routeFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 760px) {
   .shell { padding: 0 18px; }
