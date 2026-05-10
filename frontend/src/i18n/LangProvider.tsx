@@ -16,7 +16,6 @@ function getInitialLang(): Lang {
   if (typeof window === 'undefined') return 'en';
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === 'en' || stored === 'pt') return stored;
-  // Heurística: navegador em pt → pt
   if (typeof navigator !== 'undefined' && navigator.language?.startsWith('pt')) return 'pt';
   return 'en';
 }

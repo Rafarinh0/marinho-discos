@@ -43,7 +43,7 @@ public class Artist
         {
             ExternalId = externalId,
             Source = source,
-            Country = country   // ← novo
+            Country = country
         };
 
         return artist;

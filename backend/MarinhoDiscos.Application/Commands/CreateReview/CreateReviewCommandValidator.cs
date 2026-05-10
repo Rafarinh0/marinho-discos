@@ -7,6 +7,6 @@ public class CreateReviewCommandValidator : AbstractValidator<CreateReviewComman
     public CreateReviewCommandValidator()
     {
         RuleFor(x => x.AlbumId).NotEmpty();
-        RuleFor(x => x.Rating).InclusiveBetween(1, 10);  // ajuste à sua escala
+        RuleFor(x => x.Rating).InclusiveBetween(1, 10);
     }
 }

@@ -1,6 +1,3 @@
-// Cliente HTTP fino. Usa o proxy do Vite (/api → http://localhost:8080/api)
-// em dev. Em produção, defina VITE_API_BASE.
-
 import type { ApiError } from './types';
 
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? '';
@@ -42,7 +39,6 @@ export async function apiPost<T, B = unknown>(
     signal,
   });
   if (!res.ok) throw new ApiException(res.status, await parseError(res));
-  // 204 No Content
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }

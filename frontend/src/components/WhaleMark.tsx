@@ -1,6 +1,3 @@
-// Logo da marca: badge circular com camadas de ondas + silhueta de baleia.
-// Tudo herda das CSS vars (--accent, --bg, --bg-2, --ink-4) — tematiza ao vivo.
-
 export function WhaleMark({ size = 44 }: { size?: number }) {
   return (
     <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>

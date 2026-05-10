@@ -1,5 +1,3 @@
-// Tipos espelhando os DTOs do backend MarinhoDiscos.API
-
 export interface ArtistSummary {
   id: string;
   name: string;

@@ -12,7 +12,7 @@ export function Header() {
   const { theme, toggle: toggleTheme } = useTheme();
   const { lang, setLang, t } = useLang();
 
-  // Mantém o input sincronizado com o ?q= da URL
+  //keeps the input synced with the query param
   const urlQuery = searchParams.get('q') ?? '';
   const [query, setQuery] = useState(urlQuery);
   useEffect(() => setQuery(urlQuery), [urlQuery]);
