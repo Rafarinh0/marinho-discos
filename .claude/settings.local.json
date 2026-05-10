@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"status=%{http_code} final=%{url_effective}\\\\n\" -L \"https://coverartarchive.org/release/f5093c06-23e3-404f-aeaa-40f72885ee3a/front-500\")",
+      "Bash(curl -v -L -o /dev/null \"https://coverartarchive.org/release/f5093c06-23e3-404f-aeaa-40f72885ee3a/front-500\")",
+      "Bash(curl -s -H \"User-Agent: Test/1.0 \\(test@test.com\\)\" \"https://musicbrainz.org/ws/2/release/?query=artist:radiohead%20AND%20release:OK%20Computer&limit=3&fmt=json\")",
+      "Bash(curl -s -L -I \"https://coverartarchive.org/release/4b3d18cc-8937-36f4-8de0-481088be58e6/front-500\")",
+      "Bash(ls \"C:/Users/T-GAMER/Documents/Projetos/Marinho Discos/backend/MarinhoDiscos.API/\" 2>&1 | head -30)",
+      "Bash(curl -s -L -I https://coverartarchive.org/release/__TRACKED_VAR__/front-500)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -sv \"http://localhost:5173/\")",
+      "Bash(npm install *)",
+      "Bash(docker build *)",
+      "Bash(docker compose *)",
+      "Bash(git checkout *)",
+      "Bash(git mv *)"
+    ]
+  }
+}

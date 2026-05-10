@@ -18,8 +18,7 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: MarinhoDiscos.API/Dockerfile
+      context: ./backend
     container_name: marinho-discos-api
     depends_on:
       db:
@@ -30,6 +29,15 @@ services:
       MusicBrainz__UserAgent: "MarinhoDiscos/1.0 (https://github.com/Rafarinh0/marinho-discos)"
     ports:
       - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: marinho-discos-frontend
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
 
 volumes:
   marinho_db_data:
