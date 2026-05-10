@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { SearchPage } from './pages/SearchPage';
 import { useLang } from './i18n/LangProvider';
 
 function Placeholder({ name }: { name: string }) {
@@ -27,7 +28,7 @@ export default function App() {
       <Header />
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<Placeholder name="Discover" />} />
+          <Route path="/" element={<SearchPage />} />
           <Route path="/library" element={<Placeholder name="Library" />} />
           <Route path="/albums/:id" element={<Placeholder name="Album" />} />
           <Route path="/artists/:id" element={<Placeholder name="Artist" />} />
