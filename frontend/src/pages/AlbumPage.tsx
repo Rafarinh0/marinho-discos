@@ -1,0 +1,450 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+
+import { useLang } from '../i18n/LangProvider';
+import { getAlbumById } from '../api/albums';
+import { Cover } from '../components/Cover';
+import { ReviewCard } from '../components/ReviewCard';
+import { fmtTime, fmtTotalTime, ratingBuckets } from '../lib/format';
+import type { AlbumDetailsResponse } from '../api/types';
+
+export function AlbumPage() {
+  const { id } = useParams<{ id: string }>();
+  const { t } = useLang();
+  const navigate = useNavigate();
+
+  const { data: album, isLoading, error } = useQuery({
+    queryKey: ['album', id],
+    queryFn: ({ signal }) => getAlbumById(id!, signal),
+    enabled: !!id,
+  });
+
+  if (isLoading) return <Loading />;
+  if (error) return <ErrorView message={(error as Error).message} />;
+  if (!album) return <NotFoundView />;
+
+  return (
+    <div className="shell" style={{ paddingTop: 24 }}>
+      <button
+        className="font-mono muted"
+        onClick={() => navigate(-1)}
+        style={{
+          background: 'transparent',
+          border: 0,
+          padding: '8px 0',
+          fontSize: 11,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          cursor: 'pointer',
+          marginBottom: 16,
+        }}
+      >
+        ← {t('Back', 'Voltar')}
+      </button>
+
+      <Hero album={album} />
+
+      <hr className="rule rule-thick" />
+
+      <Score album={album} onWriteReview={() => alert('Coming up in D5')} />
+
+      <hr className="rule" />
+
+      <ContentTwoColumns album={album} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Hero — cover + meta
+
+function Hero({ album }: { album: AlbumDetailsResponse }) {
+  const { t } = useLang();
+  const navigate = useNavigate();
+  const year = album.releaseDate.slice(0, 4);
+
+  return (
+    <section
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(280px, 380px) 1fr',
+        gap: 56,
+        alignItems: 'flex-end',
+        marginBottom: 48,
+      }}
+    >
+      <div style={{ position: 'relative' }}>
+        <Cover album={album} />
+        <div
+          style={{
+            position: 'absolute',
+            top: -14,
+            right: -14,
+            background: 'var(--accent)',
+            color: 'var(--accent-ink)',
+            padding: '6px 10px',
+            borderRadius: 999,
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: 10,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            transform: 'rotate(4deg)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          }}
+        >
+          ◆ MD ORIGINAL PRESS
+        </div>
+      </div>
+
+      <div>
+        <div
+          className="eyebrow"
+          style={{ marginBottom: 12, color: 'var(--accent)' }}
+        >
+          ▸ {album.genres[0]?.name ?? t('Album', 'Álbum')}
+        </div>
+        <h1
+          className="font-display"
+          style={{
+            fontSize: 'clamp(40px, 6vw, 84px)',
+            lineHeight: 0.96,
+            margin: '0 0 18px',
+            letterSpacing: '-0.02em',
+            textWrap: 'balance' as const,
+          }}
+        >
+          {album.title}
+        </h1>
+        <div
+          className="font-serif"
+          style={{ fontSize: 22, lineHeight: 1.3, marginBottom: 28 }}
+        >
+          {t('by', 'por')}{' '}
+          <em
+            onClick={() => navigate(`/artists/${album.artist.id}`)}
+            style={{
+              color: 'var(--accent)',
+              cursor: 'pointer',
+              borderBottom: '1px dashed color-mix(in oklab, var(--accent) 50%, transparent)',
+              paddingBottom: 1,
+              fontStyle: 'italic',
+            }}
+            title={t('See more by this artist', 'Ver mais deste artista')}
+          >
+            {album.artist.name}
+          </em>
+        </div>
+
+        <dl
+          className="font-mono"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+            gap: '16px 24px',
+            margin: 0,
+            fontSize: 11,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          <Meta label={t('Released', 'Lançado')} value={year} />
+          <Meta label={t('Tracks', 'Faixas')} value={String(album.tracks.length)} />
+          <Meta
+            label={t('Runtime', 'Duração')}
+            value={fmtTotalTime(album.durationSeconds, 'en')}
+          />
+          {album.externalId && (
+            <Meta label="MBID" value={album.externalId.slice(0, 8) + '…'} mono />
+          )}
+        </dl>
+
+        {album.genres.length > 0 && (
+          <div className="flex gap-2" style={{ flexWrap: 'wrap', marginTop: 22 }}>
+            {album.genres.map((g) => (
+              <span key={g.id} className="chip">
+                {g.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Meta({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <div style={{ color: 'var(--ink-3)', fontSize: 10, fontWeight: 500 }}>{label}</div>
+      <div
+        style={{
+          color: 'var(--ink)',
+          fontSize: 13,
+          marginTop: 4,
+          fontFamily: mono ? 'JetBrains Mono, monospace' : undefined,
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Score block — rating + distribution + CTA
+
+function Score({
+  album,
+  onWriteReview,
+}: {
+  album: AlbumDetailsResponse;
+  onWriteReview: () => void;
+}) {
+  const { t } = useLang();
+  const buckets = ratingBuckets(album.reviews);
+  const maxBucket = Math.max(1, ...buckets);
+  const avg = album.averageRating;
+
+  return (
+    <section
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(220px, 280px) 1fr auto',
+        gap: 48,
+        alignItems: 'center',
+        padding: '20px 0 36px',
+      }}
+    >
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>
+          {t('Average rating', 'Nota média')}
+        </div>
+        {avg != null ? (
+          <>
+            <div className="score">
+              {Math.floor(avg)}
+              <span className="score-decimal">
+                .{((avg * 10) % 10).toFixed(0)}
+              </span>
+              <span
+                className="font-mono muted"
+                style={{ fontSize: 13, marginLeft: 6, letterSpacing: '0.08em' }}
+              >
+                / 10
+              </span>
+            </div>
+            <div
+              className="font-mono muted"
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                marginTop: 6,
+              }}
+            >
+              {album.reviewCount} {album.reviewCount === 1 ? 'review' : 'reviews'}
+            </div>
+          </>
+        ) : (
+          <div
+            className="font-display"
+            style={{ fontSize: 56, color: 'var(--ink-3)', lineHeight: 1 }}
+          >
+            —
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 10 }}>
+          {t('Distribution', 'Distribuição')}
+        </div>
+        <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 56 }}>
+          {buckets.map((count, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: `${(count / maxBucket) * 100}%`,
+                  minHeight: count ? 3 : 0,
+                  background: count ? 'var(--accent)' : 'var(--rule-2)',
+                  borderRadius: '2px 2px 0 0',
+                  transition: 'height .3s',
+                }}
+              />
+              <div className="font-mono muted" style={{ fontSize: 9 }}>
+                {i + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button className="btn btn-primary" onClick={onWriteReview}>
+        ✎ {t('Write a review', 'Escrever review')}
+      </button>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Tracklist + Reviews
+
+function ContentTwoColumns({ album }: { album: AlbumDetailsResponse }) {
+  const { t } = useLang();
+
+  return (
+    <section
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.5fr',
+        gap: 56,
+        marginTop: 24,
+      }}
+    >
+      {/* Tracklist */}
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 14 }}>
+          ◐ {t('Tracklist', 'Faixas')}
+        </div>
+        <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+          {album.tracks.map((tr) => (
+            <li
+              key={tr.id}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '32px 1fr auto',
+                gap: 12,
+                alignItems: 'baseline',
+                padding: '10px 0',
+                borderBottom: '1px solid var(--rule)',
+              }}
+            >
+              <span className="font-mono muted tabular" style={{ fontSize: 11 }}>
+                {String(tr.trackNumber).padStart(2, '0')}
+              </span>
+              <span className="font-serif" style={{ fontSize: 16, lineHeight: 1.3 }}>
+                {tr.title}
+              </span>
+              <span className="font-mono muted tabular" style={{ fontSize: 11 }}>
+                {fmtTime(tr.durationSeconds)}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* Reviews */}
+      <div>
+        <div className="flex justify-between items-baseline" style={{ marginBottom: 18 }}>
+          <div>
+            <div className="eyebrow">◐ {t('Reviews', 'Reviews')}</div>
+            <h3
+              className="font-display"
+              style={{ fontSize: 28, margin: '4px 0 0', lineHeight: 1 }}
+            >
+              {album.reviews.length
+                ? t('What I thought', 'O que achei')
+                : t('Be the first to write one', 'Seja o primeiro a escrever uma')}
+            </h3>
+          </div>
+        </div>
+
+        {album.reviews.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '40px 24px' }}>
+            <div
+              className="font-display muted"
+              style={{ fontSize: 40, marginBottom: 4 }}
+            >
+              ?
+            </div>
+            <div className="muted">
+              {t('No words for this one yet.', 'Ainda sem palavras sobre este.')}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-col gap-4">
+            {[...album.reviews]
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              )
+              .map((r) => (
+                <ReviewCard
+                  key={r.id}
+                  review={r}
+                  onEdit={() => alert('Coming up in D5')}
+                  onDelete={() => alert('Coming up in D5')}
+                />
+              ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// States
+
+function Loading() {
+  const { t } = useLang();
+  return (
+    <div className="shell" style={{ paddingTop: 80, textAlign: 'center' }}>
+      <div className="font-display" style={{ fontSize: 48, marginBottom: 8 }}>
+        ◐
+      </div>
+      <div className="muted">{t('Loading album…', 'Carregando álbum…')}</div>
+    </div>
+  );
+}
+
+function ErrorView({ message }: { message: string }) {
+  const { t } = useLang();
+  return (
+    <div className="shell" style={{ paddingTop: 80 }}>
+      <div className="card" style={{ borderColor: 'var(--accent)' }}>
+        <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 8 }}>
+          {t('Error', 'Erro')}
+        </div>
+        <p style={{ margin: 0 }}>{message}</p>
+      </div>
+    </div>
+  );
+}
+
+function NotFoundView() {
+  const { t } = useLang();
+  const navigate = useNavigate();
+  return (
+    <div className="shell" style={{ paddingTop: 80, textAlign: 'center' }}>
+      <div className="font-display" style={{ fontSize: 64, marginBottom: 12 }}>
+        —
+      </div>
+      <h2 className="font-display" style={{ fontSize: 28, margin: '0 0 16px' }}>
+        {t('Album not found', 'Álbum não encontrado')}
+      </h2>
+      <button className="btn btn-ghost" onClick={() => navigate('/')}>
+        {t('Back to discover', 'Voltar a descobrir')}
+      </button>
+    </div>
+  );
+}

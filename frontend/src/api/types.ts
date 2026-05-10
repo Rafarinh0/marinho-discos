@@ -24,6 +24,7 @@ export interface ReviewResponse {
 
 export interface AlbumDetailsResponse {
   id: string;
+  externalId: string | null;
   title: string;
   releaseDate: string;
   durationSeconds: number;
@@ -37,6 +38,7 @@ export interface AlbumDetailsResponse {
 
 export interface AlbumListItemResponse {
   id: string;
+  externalId: string | null;
   title: string;
   releaseDate: string;
   artistName: string;
