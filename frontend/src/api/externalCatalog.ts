@@ -9,9 +9,9 @@ export function searchExternalAlbums(
   limit = 12,
   signal?: AbortSignal
 ) {
-  const q = encodeURIComponent(query);
+  const encoded = encodeURIComponent(query);
   return apiGet<ExternalAlbumSummary[]>(
-    `/api/external-catalog/albums?q=${q}&limit=${limit}`,
+    `/api/external-catalog/albums?query=${encoded}&limit=${limit}`,
     signal
   );
 }
