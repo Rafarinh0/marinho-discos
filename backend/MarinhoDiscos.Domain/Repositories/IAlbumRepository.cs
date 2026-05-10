@@ -18,6 +18,7 @@ public interface IAlbumRepository
 
 public record AlbumListItem(
     Guid Id,
+    string? ExternalId,
     string Title,
     DateTime ReleaseDate,
     string ArtistName,

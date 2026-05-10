@@ -29,6 +29,7 @@ public class ListAlbumsHandler
         var responses = items
             .Select(i => new AlbumListItemResponse(
                 i.Id,
+                i.ExternalId,
                 i.Title,
                 i.ReleaseDate,
                 i.ArtistName,

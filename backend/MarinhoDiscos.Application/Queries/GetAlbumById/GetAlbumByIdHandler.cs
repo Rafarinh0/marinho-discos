@@ -33,6 +33,7 @@ public class GetAlbumByIdHandler
 
         return new AlbumDetailsResponse(
             album.Id,
+            album.ExternalId,
             album.Title,
             album.ReleaseDate,
             album.DurationSeconds,

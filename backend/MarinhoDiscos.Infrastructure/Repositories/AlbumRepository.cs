@@ -65,6 +65,7 @@ public class AlbumRepository : IAlbumRepository
             .Take(pageSize)
             .Select(a => new AlbumListItem(
                 a.Id,
+                a.ExternalId,
                 a.Title,
                 a.ReleaseDate,
                 a.Artist.Name,

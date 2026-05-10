@@ -2,6 +2,7 @@ namespace MarinhoDiscos.Application.DTOs.Albums;
 
 public record AlbumDetailsResponse(
     Guid Id,
+    string? ExternalId,
     string Title,
     DateTime ReleaseDate,
     int DurationSeconds,
