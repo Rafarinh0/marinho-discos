@@ -2,16 +2,17 @@ services:
   db:
     image: postgres:16
     container_name: marinho-discos-db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: marinho
-      POSTGRES_PASSWORD: marinhodiscos
-      POSTGRES_DB: marinho_discos
+      POSTGRES_USER: ${POSTGRES_USER:-marinho}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-marinhodiscos}
+      POSTGRES_DB: ${POSTGRES_DB:-marinho_discos}
     ports:
       - "5432:5432"
     volumes:
       - marinho_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U marinho -d marinho_discos"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-marinho} -d ${POSTGRES_DB:-marinho_discos}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,22 +21,31 @@ services:
     build:
       context: ./backend
     container_name: marinho-discos-api
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Host=db;Port=5432;Database=marinho_discos;Username=marinho;Password=marinhodiscos"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=${POSTGRES_DB:-marinho_discos};Username=${POSTGRES_USER:-marinho};Password=${POSTGRES_PASSWORD:-marinhodiscos}"
       MusicBrainz__UserAgent: "MarinhoDiscos/1.0 (https://github.com/Rafarinh0/marinho-discos)"
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   frontend:
     build:
       context: ./frontend
     container_name: marinho-discos-frontend
+    restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - "5173:80"
 

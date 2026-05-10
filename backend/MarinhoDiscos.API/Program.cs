@@ -51,6 +51,7 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddHealthChecks();
 
     var app = builder.Build();
     
@@ -71,6 +72,7 @@ try
     app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionMiddleware>();
     app.MapControllers();
+    app.MapHealthChecks("/health");
     app.Run();
 }
 catch (Exception ex)
