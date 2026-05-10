@@ -77,8 +77,8 @@ export function Cover({ album, showStamp = true, size = 'auto' }: CoverProps) {
         <img
           src={url}
           alt={`${album.title} — ${deriveArtistName(album)}`}
-          loading="lazy"
-          referrerPolicy="no-referrer"
+          loading="eager"
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           style={{

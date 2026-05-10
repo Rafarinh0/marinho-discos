@@ -73,6 +73,7 @@ function DiscoverHome({ t }: { t: (en: string, pt: string) => string }) {
   const albums = library?.items ?? [];
   const heroPicks: HeroAlbum[] = albums.slice(0, 6).map((a) => ({
     id: a.id,
+    externalId: a.externalId,
     title: a.title,
     artistName: a.artistName,
     releaseDate: a.releaseDate,

@@ -40,10 +40,6 @@ export function HeroVisual({ picks }: Props) {
     recordAlbum.title + (recordAlbum.artist?.name ?? recordAlbum.artistName ?? '')
   );
 
-  const current = picks[idx];
-  const stamp = current.id.replace(/[^0-9]/g, '').slice(-3).padStart(3, '0') || '001';
-  const artistName = current.artist?.name ?? current.artistName ?? '';
-
   return (
     <div
       onMouseEnter={() => setPaused(true)}
@@ -51,7 +47,7 @@ export function HeroVisual({ picks }: Props) {
       style={{
         position: 'relative',
         width: '100%',
-        aspectRatio: '1 / 1',
+        aspectRatio: '460 / 410',
         maxWidth: 460,
         margin: '0 auto',
         perspective: '1400px',
@@ -141,63 +137,11 @@ export function HeroVisual({ picks }: Props) {
         })}
       </div>
 
-      {/* Caption embaixo */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: -8,
-          left: 0,
-          right: '20%',
-          zIndex: 5,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-        }}
-      >
-        <div className="eyebrow" style={{ color: 'var(--accent)', letterSpacing: '0.16em' }}>
-          ◆ MD-{stamp}
-        </div>
-        <div
-          key={current.id}
-          style={{
-            animation: 'captionIn .6s ease-out',
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 8,
-            flexWrap: 'wrap',
-          }}
-        >
-          <span
-            className="font-display"
-            style={{
-              fontSize: 'clamp(18px, 2.6vw, 24px)',
-              lineHeight: 1.05,
-              color: 'var(--ink)',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {current.title}
-          </span>
-          {artistName && (
-            <span
-              className="font-serif italic"
-              style={{ fontSize: 'clamp(13px, 1.6vw, 15px)', color: 'var(--ink-2)' }}
-            >
-              — {artistName}
-            </span>
-          )}
-        </div>
-      </div>
-
       <style>{`
         @keyframes sleevePull {
           0%   { transform: translate(-30px, -42px) rotate(-9deg) scale(0.92); opacity: 0; }
           55%  { transform: translate(4px, -6px) rotate(-2deg) scale(1.01); opacity: 1; }
           100% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
-        }
-        @keyframes captionIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: none; }
         }
       `}</style>
     </div>
