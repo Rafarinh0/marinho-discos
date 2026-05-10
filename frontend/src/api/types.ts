@@ -76,3 +76,20 @@ export interface ApiError {
   message: string;
   errors?: Array<{ property: string; error: string }>;
 }
+
+export interface LibraryStatsResponse {
+  totalAlbums: number;
+  reviewedAlbums: number;
+  totalReviews: number;
+  totalTracks: number;
+  totalDurationSeconds: number;
+  averageRating: number | null;
+}
+
+export interface ArtistStatsResponse {
+  totalAlbums: number;
+  totalReviews: number;
+  totalTracks: number;
+  totalDurationSeconds: number;
+  averageRating: number | null;
+}

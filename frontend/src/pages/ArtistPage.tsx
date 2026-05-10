@@ -5,11 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useLang } from '../i18n/LangProvider';
 import { getArtistById } from '../api/artists';
 import { listAlbums } from '../api/albums';
+import { getArtistStats } from '../api/stats';
 import { Cover } from '../components/Cover';
 import { Skeleton } from '../components/Skeleton';
 import { fmtYear } from '../lib/format';
 import { useArtistEnrichment, type ArtistEnrichment } from '../lib/artistImage';
-import type { AlbumListItemResponse } from '../api/types';
+import type { AlbumListItemResponse, ArtistStatsResponse } from '../api/types';
 
 export function ArtistPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +27,12 @@ export function ArtistPage() {
     queryKey: ['library', { artistId: id }],
     queryFn: ({ signal }) =>
       listAlbums({ page: 1, pageSize: 200, artistId: id }, signal),
+    enabled: !!id,
+  });
+
+  const statsQuery = useQuery({
+    queryKey: ['artist-stats', id],
+    queryFn: ({ signal }) => getArtistStats(id!, signal),
     enabled: !!id,
   });
 
@@ -82,8 +89,8 @@ export function ArtistPage() {
       <ArtistHero
         artist={artist}
         yearSpan={stats.yearSpan}
-        albumsCount={albums.length}
-        tracksCount={stats.tracks}
+        statsData={statsQuery.data}
+        statsLoading={statsQuery.isLoading}
       />
 
 
@@ -114,11 +121,11 @@ export function ArtistPage() {
 interface ArtistHeroProps {
   artist: { id: string; name: string; externalId: string | null };
   yearSpan: string;
-  albumsCount: number;
-  tracksCount: number;
+  statsData: ArtistStatsResponse | undefined;
+  statsLoading: boolean;
 }
 
-function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroProps) {
+function ArtistHero({ artist, yearSpan, statsData, statsLoading }: ArtistHeroProps) {
   const { t } = useLang();
   const enrichmentQuery = useArtistEnrichment(artist.externalId);
   const enrichment = enrichmentQuery.data;
@@ -182,8 +189,27 @@ function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroPr
           ) : null}
 
           <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
-            <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albumsCount} />
-            <Stat label={t('Tracks', 'Faixas')} value={tracksCount} accent />
+            <Stat
+              label={t('Albums in library', 'Álbuns na biblioteca')}
+              value={statsData?.totalAlbums}
+              loading={statsLoading}
+            />
+            <Stat
+              label={t('Reviews', 'Reviews')}
+              value={statsData?.totalReviews}
+              loading={statsLoading}
+            />
+            <Stat
+              label={t('Avg rating', 'Nota média')}
+              value={statsData?.averageRating ?? '—'}
+              loading={statsLoading}
+              accent
+            />
+            <Stat
+              label={t('Tracks', 'Faixas')}
+              value={statsData?.totalTracks}
+              loading={statsLoading}
+            />
           </div>
         </div>
 
@@ -351,23 +377,29 @@ function Stat({
   label,
   value,
   accent,
+  loading,
 }: {
   label: string;
-  value: number;
+  value: number | string | undefined;
   accent?: boolean;
+  loading?: boolean;
 }) {
   return (
     <div>
-      <div
-        className="font-display tabular"
-        style={{
-          fontSize: 36,
-          lineHeight: 1,
-          color: accent ? 'var(--accent)' : 'var(--ink)',
-        }}
-      >
-        {value}
-      </div>
+      {loading ? (
+        <Skeleton width={64} height={36} radius={4} />
+      ) : (
+        <div
+          className="font-display tabular"
+          style={{
+            fontSize: 36,
+            lineHeight: 1,
+            color: accent ? 'var(--accent)' : 'var(--ink)',
+          }}
+        >
+          {value ?? '—'}
+        </div>
+      )}
       <div
         className="font-mono muted"
         style={{

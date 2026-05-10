@@ -87,4 +87,62 @@ public class AlbumRepository : IAlbumRepository
                 ct
             );
     }
+
+    public async Task<LibraryStats> GetLibraryStatsAsync(CancellationToken ct)
+    {
+        var albums = _context.Albums.AsNoTracking();
+        var reviews = _context.Set<Review>().AsNoTracking();
+        var tracks = _context.Set<Track>().AsNoTracking();
+
+        var totalAlbums = await albums.CountAsync(ct);
+        var reviewedAlbums = await albums.CountAsync(a => a.Reviews.Any(), ct);
+        var totalReviews = await reviews.CountAsync(ct);
+        var totalTracks = await tracks.CountAsync(ct);
+        var totalDuration = totalTracks > 0
+            ? await tracks.SumAsync(t => t.DurationSeconds, ct)
+            : 0;
+
+        decimal? averageRating = null;
+        if (totalReviews > 0)
+        {
+            var avg = await reviews.AverageAsync(r => (double)r.Rating.Value, ct);
+            averageRating = (decimal)Math.Round(avg, 2);
+        }
+
+        return new LibraryStats(
+            totalAlbums,
+            reviewedAlbums,
+            totalReviews,
+            totalTracks,
+            totalDuration,
+            averageRating);
+    }
+
+    public async Task<ArtistStats> GetArtistStatsAsync(Guid artistId, CancellationToken ct)
+    {
+        var artistAlbums = _context.Albums.AsNoTracking().Where(a => a.ArtistId == artistId);
+
+        var totalAlbums = await artistAlbums.CountAsync(ct);
+        var totalReviews = await artistAlbums.SelectMany(a => a.Reviews).CountAsync(ct);
+        var totalTracks = await artistAlbums.SelectMany(a => a.Tracks).CountAsync(ct);
+        var totalDuration = totalTracks > 0
+            ? await artistAlbums.SelectMany(a => a.Tracks).SumAsync(t => t.DurationSeconds, ct)
+            : 0;
+
+        decimal? averageRating = null;
+        if (totalReviews > 0)
+        {
+            var avg = await artistAlbums
+                .SelectMany(a => a.Reviews)
+                .AverageAsync(r => (double)r.Rating.Value, ct);
+            averageRating = (decimal)Math.Round(avg, 2);
+        }
+
+        return new ArtistStats(
+            totalAlbums,
+            totalReviews,
+            totalTracks,
+            totalDuration,
+            averageRating);
+    }
 }

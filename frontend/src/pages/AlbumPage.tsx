@@ -35,6 +35,8 @@ export function AlbumPage() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['album', id] });
     queryClient.invalidateQueries({ queryKey: ['library'] });
+    queryClient.invalidateQueries({ queryKey: ['library-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['artist-stats'] });
   };
 
   const createMutation = useMutation({

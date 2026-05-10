@@ -1,4 +1,5 @@
 using MarinhoDiscos.Application.Queries.GetArtistById;
+using MarinhoDiscos.Application.Queries.GetArtistStats;
 using MarinhoDiscos.Application.Queries.ListArtists;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,13 @@ public class ArtistsController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var result = await _mediator.Send(new GetArtistByIdQuery(id), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("{id}/stats")]
+    public async Task<IActionResult> Stats(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetArtistStatsQuery(id), ct);
         return Ok(result);
     }
 }

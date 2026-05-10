@@ -14,6 +14,9 @@ public interface IAlbumRepository
         Guid? genreId,
         CancellationToken ct);
     Task<Album?> GetByExternalIdAsync(string externalId, ExternalSource source, CancellationToken ct);
+
+    Task<LibraryStats> GetLibraryStatsAsync(CancellationToken ct);
+    Task<ArtistStats> GetArtistStatsAsync(Guid artistId, CancellationToken ct);
 }
 
 public record AlbumListItem(
@@ -23,3 +26,18 @@ public record AlbumListItem(
     DateTime? ReleaseDate,
     string ArtistName,
     int TrackCount);
+
+public record LibraryStats(
+    int TotalAlbums,
+    int ReviewedAlbums,
+    int TotalReviews,
+    int TotalTracks,
+    int TotalDurationSeconds,
+    decimal? AverageRating);
+
+public record ArtistStats(
+    int TotalAlbums,
+    int TotalReviews,
+    int TotalTracks,
+    int TotalDurationSeconds,
+    decimal? AverageRating);
