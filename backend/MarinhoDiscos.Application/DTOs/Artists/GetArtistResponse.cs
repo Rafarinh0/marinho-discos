@@ -1,3 +1,3 @@
 namespace MarinhoDiscos.Application.DTOs.Artists;
 
-public record GetArtistResponse(Guid Id, string Name);
+public record GetArtistResponse(Guid Id, string Name, string? ExternalId);

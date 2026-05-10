@@ -68,6 +68,7 @@ export interface CreateReviewForExternalAlbumResponse {
 export interface GetArtistResponse {
   id: string;
   name: string;
+  externalId: string | null;
 }
 
 export interface ApiError {

@@ -26,6 +26,6 @@ public class GetArtistByIdHandler
                 ErrorCodes.ArtistNotFound,
                 $"Artist '{request.ArtistId}' was not found");
 
-        return new GetArtistResponse(artist.Id, artist.Name);
+        return new GetArtistResponse(artist.Id, artist.Name, artist.ExternalId);
     }
 }

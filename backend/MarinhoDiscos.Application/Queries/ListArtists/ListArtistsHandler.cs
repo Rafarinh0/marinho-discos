@@ -16,6 +16,6 @@ public class ListArtistsHandler : IRequestHandler<ListArtistsQuery, List<GetArti
     public async Task<List<GetArtistResponse>> Handle(ListArtistsQuery request, CancellationToken ct)
     {
         var artists = await _artistRepository.GetAllAsync(ct);
-        return artists.Select(a => new GetArtistResponse(a.Id, a.Name)).ToList();
+        return artists.Select(a => new GetArtistResponse(a.Id, a.Name, a.ExternalId)).ToList();
     }
 }

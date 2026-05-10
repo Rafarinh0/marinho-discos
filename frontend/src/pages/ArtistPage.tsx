@@ -7,6 +7,7 @@ import { getArtistById } from '../api/artists';
 import { listAlbums } from '../api/albums';
 import { Cover } from '../components/Cover';
 import { fmtYear } from '../lib/format';
+import { useArtistImage } from '../lib/artistImage';
 import type { AlbumListItemResponse } from '../api/types';
 
 export function ArtistPage() {
@@ -77,31 +78,13 @@ export function ArtistPage() {
         ← {t('Back', 'Voltar')}
       </button>
 
-      {/* Hero */}
-      <header style={{ marginBottom: 40 }}>
-        <div
-          className="eyebrow"
-          style={{ color: 'var(--accent)', marginBottom: 10 }}
-        >
-          ▸ {t('Artist', 'Artista')} · {stats.yearSpan}
-        </div>
-        <h1
-          className="font-display"
-          style={{
-            fontSize: 'clamp(56px, 9vw, 132px)',
-            lineHeight: 0.92,
-            margin: 0,
-            letterSpacing: '-0.025em',
-            textWrap: 'balance' as const,
-          }}
-        >
-          {artist.name}
-        </h1>
-        <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
-          <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albums.length} />
-          <Stat label={t('Tracks', 'Faixas')} value={stats.tracks} accent />
-        </div>
-      </header>
+      <ArtistHero
+        artist={artist}
+        yearSpan={stats.yearSpan}
+        albumsCount={albums.length}
+        tracksCount={stats.tracks}
+      />
+
 
       <hr className="rule rule-thick" />
 
@@ -126,6 +109,80 @@ export function ArtistPage() {
 
 // ─────────────────────────────────────────────────────────────────────────
 // Subcomponentes
+
+interface ArtistHeroProps {
+  artist: { id: string; name: string; externalId: string | null };
+  yearSpan: string;
+  albumsCount: number;
+  tracksCount: number;
+}
+
+function ArtistHero({ artist, yearSpan, albumsCount, tracksCount }: ArtistHeroProps) {
+  const { t } = useLang();
+  const { data: imageUrl } = useArtistImage(artist.externalId);
+
+  return (
+    <header
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 40,
+        alignItems: 'flex-end',
+        marginBottom: 40,
+      }}
+    >
+      {/* Texto: ocupa o espaço disponível, mínimo confortável de 360px antes de wrappar */}
+      <div style={{ flex: '1 1 360px', minWidth: 0 }}>
+        <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>
+          ▸ {t('Artist', 'Artista')} · {yearSpan}
+        </div>
+        <h1
+          className="font-display"
+          style={{
+            fontSize: imageUrl ? 'clamp(48px, 7vw, 104px)' : 'clamp(56px, 9vw, 132px)',
+            lineHeight: 0.92,
+            margin: 0,
+            letterSpacing: '-0.025em',
+            textWrap: 'balance' as const,
+          }}
+        >
+          {artist.name}
+        </h1>
+        <div className="flex gap-8" style={{ marginTop: 28, flexWrap: 'wrap' }}>
+          <Stat label={t('Albums in library', 'Álbuns na biblioteca')} value={albumsCount} />
+          <Stat label={t('Tracks', 'Faixas')} value={tracksCount} accent />
+        </div>
+      </div>
+
+      {/* Imagem: fica à direita; em telas estreitas, wrappa pra baixo capada em 240px */}
+      {imageUrl && (
+        <div
+          style={{
+            flex: '0 0 auto',
+            width: 'min(240px, 100%)',
+            aspectRatio: '1',
+            overflow: 'hidden',
+            borderRadius: 12,
+            background: 'var(--bg-3)',
+            boxShadow: 'var(--shadow)',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={artist.name}
+            referrerPolicy="no-referrer"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </div>
+      )}
+    </header>
+  );
+}
 
 function DiscographyRow({ album }: { album: AlbumListItemResponse }) {
   const navigate = useNavigate();
